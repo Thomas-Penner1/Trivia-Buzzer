@@ -1,0 +1,35 @@
+.centerFormOuter {
+    display: table;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    pointer-events: none;
+}
+
+.centerFormMiddle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.centerFormInner {
+    width: auto;
+    margin: auto;
+    max-width: 450px;
+
+    pointer-events: initial;
+}
+
+.centerFormContent {
+    border-radius: 10px;
+    background-color: #ffffff;
+    padding: 6% 6%;
+}
+
+.centerFormWrapper {
+    position: relative;
+    flex: 1 1 0;
+    width: 0;
+}

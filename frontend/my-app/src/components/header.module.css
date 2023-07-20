@@ -1,0 +1,21 @@
+.centerFormHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 3px 0;
+    margin-bottom: 1%;
+}
+
+.centerFormLogoWrapper {
+    flex-shrink: 0;
+}
+
+.centerFormLogo {
+    height: 5rem;
+    width: 5rem;
+}
+
+.centerFormTitle {
+    font-size: 2.5rem;
+    padding: 0 0.5rem;
+}

@@ -1,0 +1,112 @@
+$nSpheres: 60;
+
+@mixin sphere-x {
+    $sphere-list: null;
+    @for $i from 0 through $nSpheres - 1 {
+        .sphere-#{$i} {
+            top: percentage((-100 + random(200)) / 100);
+            left: percentage((-100 + random(200)) / 100);
+        }
+        $sphere-list: append($sphere-list, unquote(".col-#{$i}"), comma);
+    }
+}
+
+@include sphere-x;
+
+.sphere {
+    position: fixed;
+    background-color: white;
+    filter: blur(1rem);
+    border-radius: 50%;
+}
+
+
+.background {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background-color: dimgray;
+    justify-content: center;
+}
+
+.background-inner {
+    height: 100%;
+    width: 100%;
+}
+
+.smallSphereWrapper {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+
+    animation: rotate 40s linear 0s infinite;
+}
+
+.mediumSphereWrapper {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+
+    animation: rotate 50s linear 0s infinite;
+}
+
+.largeSphereWrapper {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+
+    animation: rotate 80s linear 0s infinite;
+}
+
+// .blurry {
+//     position: fixed;
+//     width: 100px;
+//     height: 100px;
+//     background-color: white;
+//     filter: blur(1rem);
+//     border-radius: 50%;
+//     top: 50%;
+//     left: 50%;
+//     transform: translate(-50%, -50%);
+//     /* top: 100px;
+//     left: 100px; */
+//     /* rotate: 180deg; */
+
+//     animation: rotate 10s ease-in-out 0s infinite normal forwards;
+// }
+
+.small {
+    width: 25px;
+    height: 25px;
+}
+
+
+.medium {
+    width: 50px;
+    height: 50px;
+}
+
+.large {
+    width: 70px;
+    height: 70px;
+}
+
+// .extraLarge {
+//     width: 125px;
+//     height: 125px;
+// }
+
+// @keyframes rotate {
+//     from {
+//         transform: rotate(0deg) translateX(-0px) rotate(0deg);
+//     }
+//     to {
+//         transform: rotate(360deg) translateX(-0px) rotate(-360deg);
+//     }
+// }
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
