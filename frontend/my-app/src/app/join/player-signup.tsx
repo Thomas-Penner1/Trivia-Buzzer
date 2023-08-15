@@ -5,8 +5,11 @@ import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from 'react';
 
+import { appConfig } from './../config'
+
 import CenterForm from '@/components/center-form';
 import BackButton from '@/components/back-button';
+import { StateManager } from '@/util/stateManager';
 
 // A component allow a user to join a game, or return to the
 // selection screen
@@ -37,48 +40,40 @@ export default function PlayerSignup() {
         if (inputError) {
             setInputError(false);
         }
-
-        console.log(inputError);
     }
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         const form = event.target as HTMLFormElement;
 
-        console.log(form);
-
+        let url = appConfig.serverBaseUrl + "/buzzer/join-room"
         const data = {
             roomCode: form.room_code.value as string,
         }
 
-        // NOTE: temporary removal of validation
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+        })
 
-        // const response = await fetch("http://localhost:3000/buzzer", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(data),
-        // })
+        const result = await response.json();
 
-        // const result = await response.json();
+        // TODO: add error handling
 
-        // let isValid = result.success as boolean;
+        if ( result.success ) {
+            StateManager.initialize(result.room_code, result.player.id, false);
 
-        // if (isValid) {
-        //     // Transition the user to the next value that we are going to
-        //     // experience
-        //     router.push('/join/select-username')
-        // } else {
-        //     // The code that the user entered is not valid, so we need
-        //     // to ensure that the user remains on this page
-        //     form.room_code.value = '';
-        // }
+            let player = StateManager.getPlayer();
 
-        // dummy values to test the scripting without 
-        if ( data.roomCode === "hello" ) {
-            sessionStorage.setItem("myCat", "x");
-            router.push('/join/select-username');
+            player.once(player.ConnectEvent, () => {
+                router.push('/join/select-username');
+            });
+
+            StateManager.connect();
+
         } else {
             showError();
             setInputError(true);

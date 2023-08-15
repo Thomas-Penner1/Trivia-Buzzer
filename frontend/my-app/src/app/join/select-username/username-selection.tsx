@@ -3,49 +3,41 @@
 import Link from 'next/link';
 
 import { useRouter } from "next/navigation";
-import { FormEvent } from 'react';
+import { FormEvent, useEffect } from 'react';
 
 import BackButton from '@/components/back-button';
 import CenterForm from '@/components/center-form';
+import { StateManager } from '@/util/stateManager';
 
 // A component allow a user to join a game, or return to the
 // selection screen
 export default function UsernameSelection() {
     const router = useRouter();
+    let username: string;
+    let Player = StateManager.getPlayer();
 
-    const cat = sessionStorage.getItem("myCat");
-    console.log(cat);
+    Player.addListener(Player.SuccessUsernameEvent, () => {
+        router.push("/play/ready");
+    })
+
+    Player.addListener(Player.FailUsernameEvent, () => {
+        // TODO: display an error message
+    })
 
     // Handle the submit event on the form submit
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
 
         const form = event.target as HTMLFormElement;
-        let username = form.username.value;
+        username = form.username.value;
 
-        let data = {
-            username: form.username.value
-        };
+        Player.trySetUsername(username);
 
-        // const response = await fetch("http://localhost:3000/buzzer/ID/username", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify(data),
-        // })
+        // let data = {
+        //     username: form.username.value
+        // };
 
-        // const result = await response.text();
-
-        let isSuccess = true as boolean;
-
-        // Handle the results from the username selection
-        if (isSuccess) {
-            sessionStorage.setItem("username", username);
-            router.push("http://localhost:3000/play");
-        } else {
-
-        }
+        // StateManager.setUsername(username);
     }
 
     return (

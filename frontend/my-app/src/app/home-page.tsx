@@ -5,29 +5,37 @@ import CenterForm from "../components/center-form";
 import Background from "@/components/background";
 
 import styles from './page.module.css'
+import { appConfig } from './config'
+import { StateManager } from "@/util/stateManager";
 
 export default function HomePage() {
     const router = useRouter();
 
     function playerSelection() {
-        console.log('s')
         router.push('/join');
     }
 
     // TODO: Add error handling!!!!
     async function moderatorSelection() {
-        // const response = await fetch("http://localhost:3000/buzzer/create", {
-        //     method: "POST"
-        // });
+        let url = appConfig.serverBaseUrl + "/buzzer/create-game";
+        const response = await fetch(url, {
+            method: "POST"
+        });
 
-        // const result = await response.json();
-        // console.log(result);
+        // TODO: add proper error handling
+        if (response.status != 200) {
+            return;
+        }
+        const result = await response.json();
+        
+        // Sets variables for later
+        console.log(result.room_id);
+        StateManager.initialize( result.room_id, result.user_id, true);
 
         router.push('moderator/setup');
     }
 
     return (
-        <Background>
          <main>
              <div className="main-flex">
                  <div className="center-form-wrapper">
@@ -49,6 +57,5 @@ export default function HomePage() {
                  </div>
              </div>
          </main>
-        </Background>
       );
 }

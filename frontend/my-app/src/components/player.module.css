@@ -1,0 +1,21 @@
+.player {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.playerNoBuzz {
+    background-color: orange;
+}
+
+.playerBuzz {
+    background-color: orange;
+    box-shadow: 0 0 20px 20px green;
+}
+
+.playerUsername {
+    background-color: red;
+}
+
+.playerPoints {
+    background-color: blue;
+}

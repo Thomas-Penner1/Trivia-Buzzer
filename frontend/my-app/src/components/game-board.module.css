@@ -1,0 +1,30 @@
+.playerHolderOuter {
+    background-color: darkgray;
+    margin-bottom: 20px;
+    display: flex;
+    overflow-y: hidden;
+    justify-content: center;
+    width: 90%;
+    border-radius: 10px;
+    flex: 1 1 0;
+    overflow-y: auto;
+}
+
+.playerHolderInner {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.playerHolder {
+    flex: 1 1 0;
+}
+
+.playerHolderList {
+    padding: 0;
+}
+
+.playerHolderList li {
+    display: inline-block;
+    margin: 10px;
+}

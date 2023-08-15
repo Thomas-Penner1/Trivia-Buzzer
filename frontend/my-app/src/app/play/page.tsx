@@ -6,33 +6,53 @@ import { useEffect, useState } from "react";
 import ScoreCard from "@/components/score-card";
 
 import buzzerStyles from "../../styles/buzzer.module.css"
+import { StateManager } from "@/util/stateManager";
+import { PlayerStatus } from "@/util/enums/PlayerStatus";
 
 export default function Play() {
     const router = useRouter();
 
-    const [points, setPoints] = useState( 0 );
     const [disabled, setDisabled] = useState( false );
 
-    // Get vars from session storage
-    let username = sessionStorage.getItem("username") as string;
-    // username = "hello";
+    let Player = StateManager.getPlayer();
 
-    // Ensure that this user SHOULD be here, and redirect them to the home
-    // page otherwise
-    //
-    // TODO: make this transition look nicer :)
+    let username = Player.username as string;
+    let points = Player.points;
+
     useEffect(() => {
-        if (!username) {
-            router.push(".");
-        }
-    });
+        // Remove all listeners currently set up
+        Player.removeAllListeners();
 
-    function handleClick() {
-        // Get the time
-        console.log(Date.now());
-        setDisabled(true);
-        
-        // setPoints(points + 1);
+        Player.addListener(Player.SuccessBuzzEvent, () => {
+            Player.setState(PlayerStatus.Buzz);
+
+            // Update the necessary state variables
+        });
+
+        // Not sure whether or not we need to do anything here
+        Player.addListener(Player.FailBuzzEvent, () => {
+        });
+
+        Player.addListener(Player.CorrectAnswerEvent, () => {
+            Player.setState(PlayerStatus.Active);
+        });
+
+        Player.addListener(Player.IncorrectAnswerEvent, () => {
+            // We need to set their buzzer to disabled, and set the
+            // player state accordingly
+            Player.setState(PlayerStatus.Active);
+            setDisabled(false);
+        });
+
+        // Resets the state back to the original state
+        Player.addListener(Player.NextQuestionEvent, () => {
+            Player.setState(PlayerStatus.Active);
+            setDisabled(true);
+        });
+    }, []);
+
+    function buzz() {
+        Player.tryBuzz();
     }
     
     return (
@@ -41,7 +61,7 @@ export default function Play() {
 
             <div className={buzzerStyles.buzzerBackgroundOuter}>
                 <div className={buzzerStyles.buzzerBackgroundInner}>
-                    <button onClick={handleClick} className={buzzerStyles.buzzer} disabled={disabled}></button>
+                    <button onClick={buzz} className={buzzerStyles.buzzer} disabled={disabled}></button>
                 </div>
             </div>
         </main>
