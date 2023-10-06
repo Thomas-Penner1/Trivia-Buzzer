@@ -24,6 +24,5 @@ const httpServer = app.listen(port, () => {
 const wsServer = new ws.Server({ noServer: true })
 
 httpServer.on('upgrade', (req, socket, head) => {
-    
     wsServer.handleUpgrade(req, socket, head, buzzerWS.handleConnection)
-})
+}) 

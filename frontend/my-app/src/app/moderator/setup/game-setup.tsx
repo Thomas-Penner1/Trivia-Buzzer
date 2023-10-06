@@ -17,101 +17,159 @@ import hostStyles from '../../../styles/host.module.css';
 import PlayerDisplay from '@/components/player';
 import { PlayerStatus } from '@/util/enums/PlayerStatus';
 import GameBoard from '@/components/game-board';
+import Loader from '@/components/loader';
 
-// A component allow a user to join a game, or return to the
-// selection screen
+import GameManager, { GameManagerEvents } from '@/util/gameManager';
+import gameManager from '@/util/gameManager';
+import { GameState } from '@/util/enums/GameState';
+
+const MIN_WAIT = 333;
+
 export default function GameSetup() {
-    let tempPlayer = {
-        id: "a",
-        username: "hello",
-        status: PlayerStatus.Ready,
-        points: 0
-    } as Player;
-
     let router = useRouter();
 
-    // Get the game from the state manager
-    let Game = StateManager.getGame();
+    const [game, setGame] = useState(GameManager.getGame());
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [gameCode, setGameCode] = useState("");
-    const [participants, setParticipants] = useState([] as Player[]);
-    const [locked, setLocked] = useState(false);
+    // A simple function for when we add
+    function updateGame() {
+        setGame(GameManager.getGame());
+    }
 
     useEffect(() => {
-        console.log("i ran");
-        StateManager.connect();
-
-        Game.addListener(Game.GameCodeEvent, () => {
-            if (Game.gameCode !== undefined) {
-                setGameCode(Game.gameCode);
-            }
-        })
-    
-        Game.addListener(Game.PlayerEvent, () => {
-            setParticipants([...Game.players]);
-        })
+        GameManager.addListener(GameManagerEvents.update, updateGame);
     }, []);
 
+    useEffect(() => {
+        setTimeout(() => {setIsLoading(false)}, MIN_WAIT)
+    }, []);
+
+    useEffect(() => {
+        if (game.getStatus() === GameState.Active) {
+            router.push('./game');
+        }
+    });
+
+    GameManager.initialize();
+    // console.log(GameManager);
+
+    // Get the game from the state manager
+    // let Game = StateManager.getGame();
+
+    // const [gameCode, setGameCode] = useState("");
+    // const [participants, setParticipants] = useState([] as Player[]);
+
+    console.log(game);
+
+
+
+    // Only run after the FIRST time this object has been loaded
+    // useEffect(() => {
+    //     Game.addListener(Game.GameCodeEvent, () => {
+    //         if (Game.gameCode !== undefined) {
+    //             setGameCode(Game.gameCode);
+    //             setIsLoading(false);
+    //         }
+    //     })
+    
+    //     Game.addListener(Game.PlayerEvent, () => {
+    //         setParticipants([...Game.players]);
+    //     })
+
+    //     initialize();
+    // }, []);
+
+    // async function initialize() {
+    //     let url = appConfig.serverBaseUrl + "/buzzer/create-game";
+    //     const response = await fetch(url, {
+    //         method: "POST",
+    //     });
+
+    //     // When we are unable to initialize this component, we return to
+    //     // homepage
+    //     if (response.status != 200) {
+    //         router.push('.');
+    //     }
+        
+    //     const result = await response.json();
+
+    //     StateManager.initialize(result.room_id, result.user_id, true);
+    //     StateManager.connect();
+    // }
+
     function togglePolling() {
-        Game.togglePolling();
-
-        setLocked( !locked );
+        if (game.getIsOpen()) {
+            gameManager.sendCloseRoom();
+        } else {
+            gameManager.sendOpenRoom();
+        }
     }
 
-    // We will need to set-up a system to notify the other participants of the required
-    // start state
+    function removePlayer(user_id: string) {
+        GameManager.sendRemovePlayer(user_id);
+    }
+
     function startGame() {
-        Game.startGame();
-        Game.removeAllListeners();
-
-        router.push("./game");
+        GameManager.sendStartGame();
     }
+
+    if (isLoading || !game.getGameCode()) {
+        return <Loader />
+    }
+
+    let n_pending = game.getPlayers().filter(player => player.status === PlayerStatus.Pending).length;
+    let n_waiting = game.getPlayers().filter(player => player.status === PlayerStatus.Ready).length;
+    let n_total = game.getPlayers().length;
 
     return (
-        <>
-        <div className="page-wrapper">
-            <main className='main-flex'>
-            
-                
-                <div className="header-wrapper">
-                    <Header />
-                </div>
-
-                <div className={hostStyles.gameBoardWrapper}>
-                    <div className={hostStyles.gameBoard}>
-                        <div className={hostStyles.gameCode}>
-                            Game Code: 
-                            { gameCode? gameCode : <div className={hostStyles.dotFlashing}></div>}
-                            
+        <main>
+            <div className={hostStyles.hostMainWrapper}>
+                <div className={hostStyles.hostMain}>
+                    <div className={hostStyles.hostMainInner}>
+                        <div className={hostStyles.headerWrapper}>
+                            <Header />
                         </div>
-                        <h2 className={hostStyles.gameBoardTitle}>
-                            Players
-                        </h2>
 
-                        <GameBoard 
-                            players={participants} 
-                            setUp={true} 
-                            removePlayer={(id: string | number) => Game.removePlayer(id)}
-                        />
+                        <div className={hostStyles.gameBoardWrapper}>
+                            <GameBoard 
+                                players={game.getPlayers()} 
+                                setUp={true} 
+                                removePlayer={(id: string) => {removePlayer(id)}}
+                            />
+                        </div>
 
+                        <div className={hostStyles.gameFooter}>
+                            <div className={hostStyles.gameCodeWrapper}>
+                                <div className={hostStyles.gameCode}>
+                                    Room Code: { game.getGameCode() }
+                                </div>
 
-                        <div className={hostStyles.gameBoardFooter}>
-                            <button className={hostStyles.actionButton} onClick={startGame}>
-                                <p className={hostStyles.actionButtonText}>
+                                <button className={hostStyles.actionButton} onClick={togglePolling}>
+                                    {game.getIsOpen() ? "Lock" : "Unlock"}
+                                </button>
+                            </div>
+
+                            <div className={hostStyles.playerInfo}>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Pending: {n_pending}
+                                </div>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Waiting: {n_waiting}
+                                </div>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Total: {n_total}
+                                </div>
+                            </div>
+
+                            <div className={hostStyles.continueButtonWrapper}>
+                                <button className={hostStyles.continueButton} onClick={startGame}>
                                     Start
-                                </p>
-                                <img className={hostStyles.actionButtonIcon} src="/play-button-arrow.svg" alt="Play Arrow" />
-                            </button>
-                            <button className={hostStyles.actionButton} onClick={togglePolling}>
-                                <p className={hostStyles.actionButtonText}>
-                                    {locked ? "unlock" : "lock"}
-                                </p>
-                            </button>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
-        </>
+            </div>
+        </main>
     );
 }

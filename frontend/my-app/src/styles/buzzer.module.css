@@ -11,21 +11,34 @@
     /* width: 100%; */
     background-color: gray;
     flex-grow: 1;
-    margin: 20px;
+    margin: 30px;
 
     max-width: 500px;
-    max-height: 500px;
+    /* max-height: 500px; */
 
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
 }
 
+.buzzerWrapperOuter {
+    flex: 1 1 0;
+}
 
+.buzzerWrapperInner {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+}
 
 .buzzer {
+    /* Move it to the bottom of the screen */
     background-color: red;
     cursor: pointer;
+    margin: 30px;
 
     /* TODO: adjust the sizing */
     height: 400px;
@@ -39,7 +52,31 @@
     background-color: darkgray;
 }
 
+/* .buzzerIndicator {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+} */
 
+.buzzerIndicatorOff, .buzzerIndicatorOn {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    margin: 30px;
+}
+
+.buzzerIndicatorOn {
+    background-color: #ffffff;
+    box-shadow:
+        0 0 30px 15px #ffffff,
+        0 0 50px 30px #f0f;
+        /* 0 0 70px 60px #0ff; */
+}
+
+.buzzerIndicatorOff {
+    background-color: black;
+}
 
 @media (max-width: 500px) {
     .buzzer {

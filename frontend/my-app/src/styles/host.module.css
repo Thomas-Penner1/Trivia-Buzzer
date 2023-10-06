@@ -1,12 +1,86 @@
-.mainWrapper {
-    width: 100%;
-    height: 100%;
+.hostMainWrapper {
     position: absolute;
+
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.hostMain {
+    height: 95%;
+    width: 95%;
+
+    background-color: white;
+
+    border-radius: 20px;
+
+    /* display: flex; */
+    /* flex-direction: column; */
+}
+
+.hostMainInner {
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    /* margin: 20px; */
+}
+
+.gameFooter {
+    border-top: 5px solid red;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.gameCodeWrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.gameCode {
+    font-size: 2rem;
+}
+
+.mainComponentInner {
+    /* flex-grow: 1; */
+
+    background-color: white;
+}
+
+.actionButton {
+    border-radius: 5px;
+    border: none;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    cursor: pointer;
+
+    font-size: 1.25rem;
+
+    background-color: yellow;
+}
+
+.gameFooter {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+}
+
+.headerWrapper {
+    padding-top: 20px;
+}
+
+/* ================================================================================ */
 
 .gameBoardWrapper {
     flex: 1 1 0;
-    width: 100%;
+    padding: 20px;
+    /* width: 100%; */
     display: flex;
     justify-content: center;
 
@@ -100,12 +174,12 @@
     background-color: green;
 }
 
-.gameCode {
+/* .gameCode {
     display: flex;
     font-size: 1.5rem;
     align-items: center;
     margin: 10px;
-}
+} */
 
 .gameCodeLoading {
     height: 10px;
@@ -162,3 +236,81 @@
       background-color: rgba(152, 128, 255, 0.2);
     }
   }
+
+  /* Styles for the buzzer display */
+.buzzerOuter {
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    position: absolute;
+
+    background-color: var(--fade-background-color);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.buzzerInner {
+    background-color: white;
+    font-size: 3rem;
+    padding: 1rem;
+    border-radius: 20px;
+}
+
+.buzzerOptions {
+    display: flex;
+}
+
+.correctButton {
+    margin: 10px;
+    flex: 1 1 0;
+    font-size: 2rem;
+    background-color: rgb(42, 163, 42);
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+}
+
+.incorrectButton {
+    margin: 10px;
+    flex: 1 1 0;
+    font-size: 2rem;
+    background-color: red;
+    cursor: pointer;
+    border-radius: 10px;
+    border: none;
+}
+
+.playerInfo {
+    display: flex;
+    flex-direction: row;
+}
+
+.playerInfoBlock {
+    font-size: 2rem;
+}
+
+.continueButtonWrapper {
+    flex: 1 1 0;
+    height: 100%;
+    font-size: 2rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.continueButton {
+    border-radius: 5px;
+    border: none;
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    cursor: pointer;
+
+    font-size: 1.25rem;
+
+    background-color: yellow;
+
+    height: 100%;
+}

@@ -48,6 +48,7 @@ class AppManager extends EventEmitter {
     static _Send_StartGame       = "start-game";
     static _Send_AssignPoints    = "assign-points";
     static _Send_IncorrectAnswer = "incorrect-answer";
+    static _Send_CorrectAnswer   = "correct-answer";
     static _Send_NextQuestion    = "next-question";
     static _Send_Buzz            = "buzz";
 
@@ -98,8 +99,9 @@ class AppManager extends EventEmitter {
         this.is_host = is_host;
         this.is_initialized = true;
 
-        if (this.is_host === true) {
-            this.game = new Game(game_id);
+        if (this.is_host === true && this.game === undefined) {
+            this.game = new Game();
+
         } else {
             let temp_player = {
                 id: user_id,
@@ -155,7 +157,7 @@ class AppManager extends EventEmitter {
     // Methods for hosts =====================================================
     getGame() : Game{
         if (this.game === undefined) {
-            this.game = new Game(this.game_id);
+            this.game = new Game();
             return this.game;
         }
 
@@ -190,12 +192,28 @@ class AppManager extends EventEmitter {
         this._send(AppManager._Send_CloseRoom);
     }
 
-    startGame(): void {
+    async startGame(): Promise<void> {
         if (this.is_host !== true) {
             return;
         }
 
         this._send(AppManager._Send_StartGame);
+    }
+
+    async correctAnswer(user_id: string): Promise<void> {
+        let data = {
+            user_id: user_id,
+        }
+
+        this._send(AppManager._Send_CorrectAnswer, data);
+    }
+
+    async incorrectAnswer(user_id: string): Promise<void> {
+        let data = {
+            user_id: user_id,
+        }
+
+        this._send(AppManager._Send_IncorrectAnswer, data);
     }
 
     assignPoints(user_id: string, points?: number): void {
@@ -244,7 +262,7 @@ class AppManager extends EventEmitter {
             return;
         }
 
-        this.socket = new WebSocket("ws://localhost:3000");
+        this.socket = new WebSocket(`ws://localhost:3000/?user_id=${this.user_id}&game_id=${this.game_id}`);
 
         this.socket.onopen = () => {
             let method: string;
@@ -260,11 +278,10 @@ class AppManager extends EventEmitter {
 
         this.socket.onmessage = (event) => {
             let message = JSON.parse(event.data);
-            console.log(message);
             let method = message.method;
 
             if (method === AppManager._Receive_Buzz) {
-                console.log(message);
+                this.emit(this.BuzzEvent, message.data.user_id);
 
             } else if (method === AppManager._Receive_Connection) {
                 this.emit(this.ConnectEvent);
@@ -312,6 +329,9 @@ class AppManager extends EventEmitter {
 
                 } else if (success_method === AppManager._Send_StartGame) {
                     this.emit(this.SuccessEvent_StartGame);
+
+                } else if (success_method === AppManager._Send_Buzz) {
+                    this.emit(this.SuccessEvent_Buzz);
                 }
                 
             } else if (method === AppManager._Receive_Failure) {
@@ -319,8 +339,12 @@ class AppManager extends EventEmitter {
 
                 if (success_method === AppManager._Send_SetUsername) {
                     this.emit(this.FailureEvent_Username);
+
                 } else if (success_method === AppManager._Send_StartGame) {
                     this.emit(this.FailureEvent_StartGame);
+
+                } else if (success_method === AppManager._Send_Buzz) {
+                    this.emit(this.FailureEvent_Buzz);
                 }
             }
         }
@@ -347,8 +371,6 @@ class AppManager extends EventEmitter {
 
     private _send(method: string, data?: any): void {
         let message = {
-            game_id: this.game_id,
-            user_id: this.user_id,
             method: method,
             data: data,
         }

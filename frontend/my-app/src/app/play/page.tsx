@@ -9,9 +9,31 @@ import buzzerStyles from "../../styles/buzzer.module.css"
 import { StateManager } from "@/util/stateManager";
 import { PlayerStatus } from "@/util/enums/PlayerStatus";
 
+
+interface BuzzerIndicatorProps {
+    lit: boolean,
+}
+
+
+function BuzzerIndicator({lit}: BuzzerIndicatorProps) {
+    let litClass: string;
+
+    if (lit) {
+        litClass = buzzerStyles.buzzerIndicatorOn;
+    } else {
+        litClass = buzzerStyles.buzzerIndicatorOff;
+    }
+
+    return (
+        <div className={litClass}></div>
+    )
+}
+
+
 export default function Play() {
     const router = useRouter();
 
+    const [buzz, setBuzz] = useState(false);
     const [disabled, setDisabled] = useState( false );
 
     let Player = StateManager.getPlayer();
@@ -24,9 +46,7 @@ export default function Play() {
         Player.removeAllListeners();
 
         Player.addListener(Player.SuccessBuzzEvent, () => {
-            Player.setState(PlayerStatus.Buzz);
-
-            // Update the necessary state variables
+            setBuzz(true);
         });
 
         // Not sure whether or not we need to do anything here
@@ -34,24 +54,17 @@ export default function Play() {
         });
 
         Player.addListener(Player.CorrectAnswerEvent, () => {
-            Player.setState(PlayerStatus.Active);
         });
 
         Player.addListener(Player.IncorrectAnswerEvent, () => {
-            // We need to set their buzzer to disabled, and set the
-            // player state accordingly
-            Player.setState(PlayerStatus.Active);
-            setDisabled(false);
         });
 
-        // Resets the state back to the original state
         Player.addListener(Player.NextQuestionEvent, () => {
-            Player.setState(PlayerStatus.Active);
-            setDisabled(true);
         });
+
     }, []);
 
-    function buzz() {
+    function Buzz() {
         Player.tryBuzz();
     }
     
@@ -61,7 +74,8 @@ export default function Play() {
 
             <div className={buzzerStyles.buzzerBackgroundOuter}>
                 <div className={buzzerStyles.buzzerBackgroundInner}>
-                    <button onClick={buzz} className={buzzerStyles.buzzer} disabled={disabled}></button>
+                    <BuzzerIndicator lit={buzz} />
+                    <button onClick={Buzz} className={buzzerStyles.buzzer}></button>
                 </div>
             </div>
         </main>

@@ -1,7 +1,7 @@
 import { PlayerStatus } from "@/util/enums/PlayerStatus";
 
 export interface Player {
-    readonly id: string,
+    id: string,
     username?: string,
     points: number,
     status: PlayerStatus,

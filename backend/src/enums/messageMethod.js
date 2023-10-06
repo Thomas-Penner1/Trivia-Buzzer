@@ -1,25 +1,83 @@
 class MessageMethod {
-    // A method to check equality of our enums (idk if this should be added)
-    // to a base class or not tbh
-    static isEqual(val1, val2) {
-        return val1.name === val2.name;
+    // General method for help syncing states when needed
+    static GetState        = new MessageMethod("get-state");
+
+    // Methods for players ===================================================
+    static SetUsername     = new MessageMethod("set-username");
+    static Buzz            = new MessageMethod("buzz");
+    static JoinGame        = new MessageMethod("join-game");
+    static PlayerLeave     = new MessageMethod("player-leave");
+
+    // Methods for hosts =====================================================
+    static OpenRoom        = new MessageMethod("open-room");
+    static CloseRoom       = new MessageMethod("close-room");
+    static RemovePlayer    = new MessageMethod("remove-player");
+    static StartGame       = new MessageMethod("start-game");
+    static NextQuestion    = new MessageMethod("next-question");
+    static CorrectAnswer   = new MessageMethod("correct-answer");
+    static IncorrectAnswer = new MessageMethod("incorrect-answer");
+
+    // Default message =======================================================
+    static INVALID         = new MessageMethod("INVALID");
+
+    /**
+     * Create a new incoming message method
+     * @param {string} name 
+     */
+    constructor(name) {
+        this.name = name;
     }
 
-    static JoinHost = new MessageMethod("join-host");
-    static JoinPlayer = new MessageMethod("join-player");
-    static SetUsername = new MessageMethod("set-username");
-    static OpenRoom = new MessageMethod("open-room");
-    static CloseRoom = new MessageMethod("close-room");
-    static RemovePlayer = new MessageMethod("remove-player");
-    static StartGame = new MessageMethod("start-game");
+    toString() {
+        return this.name;
+    }
 
-    // Last one that we will implement - this will be the trickiest one tbh
-    static Buzz = new MessageMethod("buzz");
-    static AssignPoints = new MessageMethod("assign-points");
-    static NextQuestion = new MessageMethod("next-question");
+    /**
+     * Converts a string to an incoming message type. If no types
+     * are available, this results in an invalid message
+     * 
+     * @param {string} str 
+     * @returns IncomingMessageMethod
+     */
+    static convertString(str) {
+        switch (str) {
+            case MessageMethod.GetState.name:
+                return MessageMethod.GetState;
 
-    constructor (name) {
-        this.name = name;
+            case MessageMethod.SetUsername.name:
+                return MessageMethod.SetUsername;
+
+            case MessageMethod.Buzz.name:
+                return MessageMethod.Buzz;
+
+            case MessageMethod.JoinGame.name:
+                return MessageMethod.JoinGame;
+
+            case MessageMethod.OpenRoom.name:
+                return MessageMethod.OpenRoom;
+
+            case MessageMethod.CloseRoom.name:
+                return MessageMethod.CloseRoom;
+
+            case MessageMethod.RemovePlayer.name:
+                return MessageMethod.RemovePlayer;
+            
+            case MessageMethod.StartGame.name:
+                return MessageMethod.StartGame;
+
+            case MessageMethod.NextQuestion.name:
+                return MessageMethod.NextQuestion;
+
+            case MessageMethod.CorrectAnswer.name:
+                return MessageMethod.CorrectAnswer;
+
+            case MessageMethod.IncorrectAnswer.name:
+                return MessageMethod.IncorrectAnswer;
+
+        
+            default:
+                return MessageMethod.INVALID;
+        }
     }
 }
 

@@ -2,7 +2,15 @@ const GameStatus = require("../enums/gameStatus");
 const PlayerStatus = require("../enums/playerStatus");
 
 // A Game class that incorporates the usage of websockets
+//
+// Let's re-hash the code so that this is the primary controller of the application
 class GameWS {
+    /**
+     * Represents a game
+     * 
+     * @constructor
+     * @param {string} id - The id of the game 
+     */
     constructor(id) {
         this.id = id;
 
@@ -68,15 +76,15 @@ class GameWS {
             return false;
         }
 
-        for (let p of this.players) {
-            console.log(p.username);
-        }
+        // for (let p of this.players) {
+        //     console.log(p.username);
+        // }
 
         let success = player.setUsername(username);
 
-        for (let p of this.players) {
-            console.log(p.username);
-        }
+        // for (let p of this.players) {
+        //     console.log(p.username);
+        // }
         
         if (success) {
             // Notify the host on the success
@@ -160,6 +168,38 @@ class GameWS {
         } 
         
         return success;
+    }
+
+    correctAnswer(user_id) {
+        let data = {
+            method: "correct-answer",
+            data: {
+                user_id: user_id,
+            }
+        }
+
+        // Let everyone know who ISN'T the one who guessed know
+        for (let p of this.players) {
+            p.ws.send(JSON.stringify(data));
+        }
+    }
+
+    incorrectAnswer(user_id) {
+        let player = this.players.find(obj => {return obj.id === user_id});
+
+        // Return early as the player does not exist
+        if (player === undefined) {
+            return;
+        }
+
+        let data = {
+            method: "incorrect-answer",
+            data: {
+                user_id: user_id,
+            }
+        }
+
+        player.ws.send(JSON.stringify(data));
     }
 }
 

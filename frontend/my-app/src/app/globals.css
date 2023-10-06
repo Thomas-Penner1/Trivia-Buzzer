@@ -1,3 +1,12 @@
+/* Color variables for use accross the app */
+:root {
+    --error-impact-color: #a00000;
+    --error-hover-color: #d17171;
+    --error-background-color: #FAA0A0;
+
+    --fade-background-color: rgba(0, 0, 0, 0.75);
+}
+
 @keyframes gradient {
     0% {
         background-position: 0% 50%;
@@ -32,6 +41,11 @@ body {
 
 /* main {
     justify-content: center;
+} */
+
+/* main {
+    height: 100%;
+    width: 100%;
 } */
 
 footer {

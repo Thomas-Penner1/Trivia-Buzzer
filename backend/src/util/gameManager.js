@@ -1,4 +1,7 @@
-const GameWS = require("../classes/game-ws")
+// const GameWS = require("../classes/game-ws")
+
+const Game = require("../classes/game");
+const { generateRoomPassword } = require("./buzzerUtil");
 
 // A simple library to build and manage games. This will essentially hide a lot of
 // the implementation details from the other files :)
@@ -6,13 +9,18 @@ const GameWS = require("../classes/game-ws")
 let Games = new Map();
 let Passcodes = new Map();
 
+
+// This is what is going to be handling most of the requests
 var GameManager = {
     /*
      * Creates a new game, and adds it to the games mapping
      */
-    createGame: function(room_id) {
-        let newGame = new GameWS(room_id);
+    createGame: function(room_id, host_id) {
+        let passcode = generateRoomPassword();
+        let newGame = new Game(room_id, host_id, passcode);
+
         Games.set(room_id, newGame);
+        Passcodes.set(passcode, room_id);
     },
 
     /*

@@ -3,41 +3,67 @@
 import Link from 'next/link';
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import BackButton from '@/components/back-button';
 import CenterForm from '@/components/center-form';
 import { StateManager } from '@/util/stateManager';
+import Loader from '@/components/loader';
+import AppNotification from '@/components/notification';
+import PlayerManager, { PlayerEvent } from '@/util/playerManager';
 
 // A component allow a user to join a game, or return to the
 // selection screen
 export default function UsernameSelection() {
     const router = useRouter();
+    const [isLoading, setIsLoading] = useState(false);
+    const [showError, setShowError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+
+    const errorMessage_duplicate = "Username already exists. Please select something else."
+    const errorMessage_empty = "Username must contain a non-whitespace character";
+
     let username: string;
-    let Player = StateManager.getPlayer();
 
-    Player.addListener(Player.SuccessUsernameEvent, () => {
-        router.push("/play/ready");
-    })
+    // console.log(PlayerManager.getUsernames());
+    function checkUsername() {
+        console.log("here");
+        if (PlayerManager.getPlayer().username) {
+            router.push("/play/ready");
+        } else {
+            setIsLoading(false);
+            setShowError(true);
+            setErrorMessage(errorMessage_duplicate);
 
-    Player.addListener(Player.FailUsernameEvent, () => {
-        // TODO: display an error message
-    })
+            // Recurse so that we never have to call this more than needed
+            PlayerManager.once(PlayerEvent.update, checkUsername);
+        }
+    }
+
+    useEffect(() => {
+        // PlayerManager.removeAllListeners(PlayerEvent.update);
+
+        PlayerManager.once(PlayerEvent.update, checkUsername);
+    }, []);
 
     // Handle the submit event on the form submit
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
 
         const form = event.target as HTMLFormElement;
-        username = form.username.value;
+        username = form.username.value as string;
+        username = username.trim();
+        console.log(username);
 
-        Player.trySetUsername(username);
+        if (username === "") {
+            setErrorMessage(errorMessage_empty);
+            setShowError(true);
+            return;
+        }
 
-        // let data = {
-        //     username: form.username.value
-        // };
+        PlayerManager.sendSetUsername(username);
 
-        // StateManager.setUsername(username);
+        setIsLoading(true);
     }
 
     return (
@@ -59,6 +85,17 @@ export default function UsernameSelection() {
                 </form>
             </CenterForm>
             
+            {isLoading ? <Loader /> : null}
+
+            {
+                showError ? <AppNotification 
+                        message={errorMessage} 
+                        removeFunction={() => {setShowError(false)}} 
+                        inProp={showError} 
+                        activeTime={2000}
+                    /> 
+                    : null
+            }
         </main>
     );
 }

@@ -1,23 +1,30 @@
 .playerHolderOuter {
-    background-color: darkgray;
-    margin-bottom: 20px;
-    display: flex;
+    /* background-color: darkgray; */
+    /* margin-bottom: 20px; */
+    /* display: flex; */
     overflow-y: hidden;
     justify-content: center;
-    width: 90%;
+    width: 100%;
     border-radius: 10px;
-    flex: 1 1 0;
-    overflow-y: auto;
+    /* flex: 1 1 0; */
+    overflow-x: hidden;
 }
 
 .playerHolderInner {
-    flex: 1 1 0;
+    width: 100%;
+    height: 100%;
+    /* flex: 1 1 0; */
+    /* flex-grow: 2; */
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 }
 
 .playerHolder {
     flex: 1 1 0;
+    overflow-y: auto;
+    padding: 15px;
+
+    border-right: 1px solid white;
 }
 
 .playerHolderList {
@@ -27,4 +34,63 @@
 .playerHolderList li {
     display: inline-block;
     margin: 10px;
+}
+
+.boardBottom {
+    /* width: 100%; */
+    /* height: 10px; */
+    /* border-top: 2px solid white; */
+    /* display: flex; */
+
+    /* padding: 20px; */
+}
+
+.bottomSection {
+    display: flex;
+    padding: 20px;
+}
+
+.bottomSectionText {
+    padding-right: 10px;
+}
+
+.bottomSectionButton {
+
+}
+
+.boardRight {
+    padding: 15px;
+    overflow-y: auto;
+    /* border: 2px solid black; */
+}
+
+.leaderBoardWrapper {
+    /* overflow-y: scroll; */
+}
+
+.leaderBoard {
+    table-layout: fixed;
+    border-collapse: collapse;
+    /* border: 3px solid purple; */
+    /* width: 100%; */
+}
+
+.leaderBoard caption {
+    font-size: 1.5rem;
+}
+
+.leaderBoard thead th:nth-child(1) {
+    width: 30%;
+}
+
+.leaderBoard thead th:nth-child(2) {
+    width: 50%;
+}
+
+.leaderBoard th, .leaderBoard td {
+    padding: 20px;
+}
+
+.sectionTitle {
+    font-size: 1.5rem;
 }

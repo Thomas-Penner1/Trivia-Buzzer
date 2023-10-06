@@ -7,33 +7,32 @@ import Background from "@/components/background";
 import styles from './page.module.css'
 import { appConfig } from './config'
 import { StateManager } from "@/util/stateManager";
+import Loader from "@/components/loader";
+import AppNotification from "@/components/notification";
+import { useState } from "react";
 
 export default function HomePage() {
     const router = useRouter();
 
     function playerSelection() {
         router.push('/join');
+        // setShowError(true);
     }
 
-    // TODO: Add error handling!!!!
     async function moderatorSelection() {
-        let url = appConfig.serverBaseUrl + "/buzzer/create-game";
-        const response = await fetch(url, {
-            method: "POST"
-        });
-
-        // TODO: add proper error handling
-        if (response.status != 200) {
-            return;
-        }
-        const result = await response.json();
-        
-        // Sets variables for later
-        console.log(result.room_id);
-        StateManager.initialize( result.room_id, result.user_id, true);
-
         router.push('moderator/setup');
+        // setShowError(false);
     }
+
+    // Render page based on how we get there
+    // Option 1:
+    // Query Parameters
+    // Option 2:
+    // State Variables
+    // Messages that we need to prepare to render:
+    // - Game ended by server
+    // - Game ended by host
+    // - Removed from game by host
 
     return (
          <main>

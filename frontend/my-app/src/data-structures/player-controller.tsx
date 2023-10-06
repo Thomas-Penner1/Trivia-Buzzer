@@ -95,6 +95,7 @@ export class PlayerController extends EventEmitter {
         StateManager.buzz();
 
         StateManager.once(StateManager.SuccessEvent_Buzz, () => {
+            console.log("asdfasdfasdfasdf");
             this.emit(this.SuccessBuzzEvent);
         });
 

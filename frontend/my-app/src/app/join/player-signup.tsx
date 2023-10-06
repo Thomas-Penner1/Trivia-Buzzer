@@ -3,38 +3,47 @@
 import Link from 'next/link';
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 import { appConfig } from './../config'
 
 import CenterForm from '@/components/center-form';
 import BackButton from '@/components/back-button';
 import { StateManager } from '@/util/stateManager';
+import Loader from '@/components/loader';
+import AppNotification from '@/components/notification';
+import PlayerManager, { PlayerEvent, PlayerJoinStatus } from '@/util/playerManager';
 
 // A component allow a user to join a game, or return to the
 // selection screen
 export default function PlayerSignup() {
-    const [isError, setIsError] = useState(false);
-    const [slideUp, setSlideUp] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showError, setShowError] = useState(false);
     const [inputError, setInputError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const router = useRouter();
 
-    // A method to show the error for a portion of time. Note that
-    // TODO: figure out an appropriate amount of time to display the message for
-    async function showError () {
-        let promise = new Promise(r => setTimeout(r, 5000));
-        setIsError(true);
-        await promise;
-        setSlideUp(false);
-        await new Promise(r => setTimeout(r, 1000));
-        setIsError(false);
-        setSlideUp(true);
-    }
+    // NOTE: Using useEffect to guarantee that this code is only run the first
+    // time that the component runs
+    useEffect(() => {
+        PlayerManager.reset();
+    }, []);
 
-    // NOTE: we empty the form when a user enters an invalid response. Otherwise,
-    // we want to only have the error displayed when they have not entered anything
-    // Note that we only need to check if isError is true, and once we have received
+    // NOTE: Wrapping the use of the router in use effect, so that we are guaranteed
+    // to only have one method, we can clean it up, and it will run after the
+    // component has been rendered
+    useEffect(() => {
+        PlayerManager.addListener(PlayerEvent.update, () => {
+            router.push('/join/select-username');
+        });
+
+        return () => {
+            console.log("unloading");
+            PlayerManager.removeAllListeners(PlayerEvent.update);
+        }
+    })
+
     // input we can set isError back to false
     function handleInput (event: FormEvent) {
         if (inputError) {
@@ -42,42 +51,38 @@ export default function PlayerSignup() {
         }
     }
 
+    async function connect(room_code: string) {
+        let result = await PlayerManager.initialize(room_code);
+
+        console.log(result);
+        
+        if (result === PlayerJoinStatus.success) {
+            return;
+        }
+
+        setErrorMessage(getErrorMessage(result));
+        setShowError(true);
+        setInputError(true);
+        setIsLoading(false);
+    }
+
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         const form = event.target as HTMLFormElement;
+        const roomCode = form.room_code.value as string;
 
-        let url = appConfig.serverBaseUrl + "/buzzer/join-room"
-        const data = {
-            roomCode: form.room_code.value as string,
-        }
+        connect(roomCode);
+        setShowError(false);
+        setIsLoading(true);
+    }
 
-        const response = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        })
-
-        const result = await response.json();
-
-        // TODO: add error handling
-
-        if ( result.success ) {
-            StateManager.initialize(result.room_code, result.player.id, false);
-
-            let player = StateManager.getPlayer();
-
-            player.once(player.ConnectEvent, () => {
-                router.push('/join/select-username');
-            });
-
-            StateManager.connect();
-
+    function getErrorMessage(code: PlayerJoinStatus): string {
+        if (code === PlayerJoinStatus.room_does_not_exist) {
+            return "Unable to find a matching room."
+        } else if (code === PlayerJoinStatus.room_closed) {
+            return "Unable to join at the room at this time. Please try another room code."
         } else {
-            showError();
-            setInputError(true);
-            return false;
+            return "Unable to join at this time. Please try again later."
         }
     }
 
@@ -101,19 +106,18 @@ export default function PlayerSignup() {
                 </form>
             </CenterForm>
             {
-                isError ? (
-                    <div className={
-                        slideUp ? "error-bar slide-up" : "error-bar slide-down"
-                    }>
-                        <img src="important.svg" className="error-image"/>
-                        <p>We could not find the matching game. Please try again.</p>
-                        <img src="important.svg" className="error-image"/>
-                    </div>
-                ) : (
-                    <></>
-                )
+                isLoading ? <Loader /> : null
             }
 
+            {
+                showError ? <AppNotification 
+                                message={errorMessage} 
+                                removeFunction={() => {setShowError(false)}} 
+                                inProp={showError} 
+                                activeTime={2000}
+                            /> 
+                            : null
+            }
         </main>
         </>
     );

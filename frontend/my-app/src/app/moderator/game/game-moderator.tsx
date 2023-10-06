@@ -13,6 +13,41 @@ import { Player } from '@/data-structures/player';
 import hostStyles from '../../../styles/host.module.css';
 import { StateManager } from '@/util/stateManager';
 import GameBoard from '@/components/game-board';
+import { PlayerStatus } from '@/util/enums/PlayerStatus';
+
+interface BuzzDisplayProps {
+    player?: Player,
+    onCorrect: Function,
+    onIncorrect: Function,
+}
+
+function BuzzDisplay({player, onCorrect, onIncorrect}: BuzzDisplayProps) {
+    if (player === undefined) {
+        return null;
+    }
+
+    let username = player.username;
+    let user_id = player.id;
+
+    return (
+        <div className={hostStyles.buzzerOuter}>
+            <div className={hostStyles.buzzerInner}>
+                {username} has buzzed in
+
+                <div className={hostStyles.buzzerOptions}>
+                    <button className={hostStyles.correctButton} onClick={() => onCorrect(user_id)}>
+                        Correct
+                    </button>
+
+                    <button className={hostStyles.incorrectButton} onClick={() => onIncorrect(user_id)}>
+                        Incorrect
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 
 // A component allow a user to join a game, or return to the
 // selection screen
@@ -29,145 +64,109 @@ export default function GameModerator() {
     const [participants, setParticipants] = useState(_participants);
     const [locked, setLocked] = useState(_locked);
 
+    const [buzz, setBuzz] = useState(false);
+    const [buzzPlayer, setBuzzPlayer] = useState<Player | undefined>(undefined);
+
     useEffect(() => {
         Game.addListener(Game.PlayerEvent, () => {
             setParticipants([...Game.players]);
         })
 
+        Game.addListener(Game.BuzzEvent, (user_id: string) => {
+            let player = participants.find((player) => player.id == user_id);
+
+            if (player !== undefined) {
+                setBuzz(true);
+                setBuzzPlayer(player);
+            }
+        });
+
     }, []);
 
-    // Right now, we are adding new users to started games!
-    // This is a later task :)
-    // StateManager.addListener(StateManager.BuzzEvent, (user_id) => {
-    //     console.log(user_id);
-    // });
-    
+    function togglePolling() {
+        Game.togglePolling();
 
-    // A temporary initialization function
-    // Uses a number of players to create the initialization so that we have
-    // something to display on the screen.
-    // function init() {
-    //     const nPlayers = 20;
-    //     let players = [] as Player[];
+        setLocked( !locked );
+    }
 
-    //     for (let i = 0; i < nPlayers; ++i) {
-    //         let player = {
-    //             id: String(i),
-    //             username: "player " + i,
-    //             points: 0,
-    //         } as Player;
+    function nextQuestion() {
 
-    //         players.push(player);
-    //     }
+    }
 
-    //     return players;
-    // }
+    // On a correct answer, we need to:
+    // 1. Increment the player's points by 1
+    function correctAnswer(user_id: string) {
+        let player = participants.find((player) => player.id == user_id);
 
-    // const [participants, setParticipants] = useState(init() as Player[]);
+        if (player === undefined) {
+            setBuzz(false);
+            return;
+        }
 
+        player.points = player.points + 1;
 
-    // setParticipants(players);
+        setParticipants([...Game.players])
+        setBuzz(false);
+    }
 
-    // let continuePolling = true as boolean;
+    // On an incorrect answer, we need to:
+    // 1. Change the player's status
+    // 2. Notify to the server that we have an incorrect answer
+    function incorrectAnswer(user_id: string) {
+        let player = participants.find((player) => player.id == user_id);
 
-    // // Allows the user to stop the polling method - idk, but seems
-    // // really useful tbh
-    // function togglePolling() {
-    //     continuePolling = !continuePolling;
+        if (player === undefined) {
+            setBuzz(false);
+            return;
+        }
 
-    //     if (continuePolling) {
-    //         awaitParticipants();
-    //     }
-    // }
-
-    // // A method that is used to accept new users. We want? to be
-    // // able to limit the number of participants if possible
-    // async function awaitParticipants() {
-    //     // let response = await fetch(
-    //     //     "http://localhost:3000/buzzer/ID/username/subscribe",
-    //     //     { cache: 'no-store'}
-    //     // );
-
-    //     // if (!continuePolling) {
-    //     //     return;
-    //     // }
-
-    //     // if (response.status === 502) {
-    //     //     // Connection timeout
-    //     //     await awaitParticipants();
-
-    //     // } else if (response.status != 200) {
-    //     //     // Error happened
-    //     //     // TODO: add proper error handling here
-    //     //     await awaitParticipants();
-
-    //     // } else {
-    //     //     // Got a participant!!
-    //     //     let participant = await response.text();
-    //     //     let nextState = [...participants, participant];
-    //     //     setParticipants(nextState);
-
-    //     //     await awaitParticipants();
-    //     // }
-    // }
-
-    // NOTE: Currently handling it here for simplicity
-    // TODO: https://stackoverflow.com/questions/29810914/react-js-onclick-cant-pass-value-to-method
-    // function removePlayer(playerId: string) {
-    //     let updatedParticipants = participants.filter(item => item.id != playerId);
-    //     setParticipants(updatedParticipants); 
-    // }
-
-    // // We will need to set-up a system to notify the other participants of the required
-    // // start state
-    // function startGame() {
-    //     router.push("http://localhost:3000/moderator/game")
-    // }
-
-    // awaitParticipants();
+        player.status = PlayerStatus.Incorrect;
+        
+        setParticipants([...Game.players]);
+        setBuzz(false);
+    }
 
     return (
-        <>
-        <div className="page-wrapper">
-            <main className='main-flex'>
-            
-                
-                <div className="header-wrapper">
-                    <Header />
-                </div>
-
-                <div className={hostStyles.gameBoardWrapper}>
-                    <div className={hostStyles.gameBoard}>
-                        <div className={hostStyles.gameCode}>
-                            Game Code: 
-                            { gameCode? gameCode : <div className={hostStyles.dotFlashing}></div>}
+        <main>
+            <div className={hostStyles.hostMainWrapper}>
+                <div className={hostStyles.hostMain}>
+                    <div className={hostStyles.hostMainInner}>
+                        <div className={hostStyles.headerWraper}>
+                            <Header />
                         </div>
 
-                        <h2 className={hostStyles.gameBoardTitle}>
-                            Players Joined
-                        </h2>
+                        <div className={hostStyles.gameBoardWrapper}>
+                            <GameBoard
+                                players={participants}
+                                setUp={false}
+                                removePlayer={(id: string | number) => Game.removePlayer(id)}
+                            />
+                        </div>
 
-                        <GameBoard
-                            players={participants}
-                            setUp={false}
-                            removePlayer={(id: string | number) => Game.removePlayer(id)}
-                        />
+                        <div className={hostStyles.gameFooter}>
+                            <div className={hostStyles.gameCodeWrapper}>
+                                <div className={hostStyles.gameCode}>
+                                    Room Code: {gameCode}
+                                </div>
 
-                        {/* <div className={hostStyles.playerHolderWrapper}>
-                            <ul className={hostStyles.playerHolder}>
-                                {participants.map(
-                                    participant => (<li key={participant.id}>
-                                        <div className={hostStyles.player} onClick={() => removePlayer(participant.id)}>
-                                            {participant.username}
-                                        </div>
-                                    </li>)
-                                )}
-                            </ul>
-                        </div> */}
+                                <button className={hostStyles.actionButton} onClick={togglePolling}>
+                                    {locked ? "Unlock" : "Lock"}
+                                </button>
+                            </div>
+
+                            <button className={hostStyles.actionButton} onClick={nextQuestion}>
+                                Next Question
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
-        </>
+            </div>
+
+            { buzz ? <BuzzDisplay 
+                player={buzzPlayer}
+                onCorrect={correctAnswer}
+                onIncorrect={incorrectAnswer}
+            /> : null }
+        </main>
     );
 }
