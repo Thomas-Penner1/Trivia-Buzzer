@@ -1,38 +1,66 @@
 'use client'
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import CenterForm from "../components/center-form";
-import Background from "@/components/background";
 
-import styles from './page.module.css'
-import { appConfig } from './config'
-import { StateManager } from "@/util/stateManager";
-import Loader from "@/components/loader";
-import AppNotification from "@/components/notification";
+import { AppNotification } from "@/components/Notification";
 import { useState } from "react";
+import { UserSocketCloseReason } from "@/util/userSocket";
 
 export default function HomePage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     function playerSelection() {
         router.push('/join');
-        // setShowError(true);
     }
 
     async function moderatorSelection() {
         router.push('moderator/setup');
-        // setShowError(false);
     }
 
-    // Render page based on how we get there
-    // Option 1:
-    // Query Parameters
-    // Option 2:
-    // State Variables
-    // Messages that we need to prepare to render:
-    // - Game ended by server
-    // - Game ended by host
-    // - Removed from game by host
+    let displayMessage = false;
+    let message: string = "";
+
+    if (searchParams.get("close_reason")) {
+        let reason = Number(searchParams.get("close_reason"));
+
+        switch (reason) {
+            case UserSocketCloseReason.UNKOWN_REASON:
+                displayMessage = true;
+                message = "Connection lost due to unknown reason.";
+                break;
+
+            case UserSocketCloseReason.SERVER_ENDED_GAME:
+                displayMessage = true;
+                message = "Server closed the game.";
+                break;
+
+            case UserSocketCloseReason.HOST_REMOVED_USER:
+                displayMessage = true;
+                message = "Removed by game by host.";
+                break;
+
+            case UserSocketCloseReason.HOST_LEFT_GAME:
+                displayMessage = true;
+                message = "Host ended the game.";
+                break;
+
+            case UserSocketCloseReason.HOST_ENDED_GAME:
+                displayMessage = true;
+                message = "Host ended the game.";
+                break;
+        
+            default:
+                break;
+        }
+    }
+
+    const [showMessage, setShowMessage] = useState(displayMessage);
+
+    function removeNotification() {
+        setShowMessage(false);
+    }
 
     return (
          <main>
@@ -54,6 +82,17 @@ export default function HomePage() {
                  <div>
                      <p>Created by: Thomas Penner</p>
                  </div>
+
+                 {
+                    showMessage ? 
+                        <AppNotification 
+                            message={message}
+                            transitionDuration={500}
+                            callback={removeNotification}
+                        /> 
+                        : null
+                 }
+                 
              </div>
          </main>
       );

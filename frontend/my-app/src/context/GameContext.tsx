@@ -4,7 +4,6 @@ import { Game_ } from '@/data-structures/game';
 import { UserSocket, UserSocketEvent, UserSocketState } from '@/util/userSocket';
 import React, { ReactNode, useContext, useEffect, useState } from 'react';
 
-
 // This is basically all of the connection and game information we will need
 // across the application
 export interface UserState {

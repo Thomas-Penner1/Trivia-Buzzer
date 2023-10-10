@@ -21,14 +21,15 @@ export enum UserSocketState {
 }
 
 export const UserSocketCloseReason = {
+    UNKOWN_REASON:         1006,
+    
+    SERVER_ENDED_GAME:     4000,
+
     HOST_REMOVED_USER:     4100,
     HOST_LEFT_GAME:        4101,
     HOST_ENDED_GAME:       4102,
 
     USER_ENDED_CONNECTION: 4200,
-
-    UNKOWN:                4999,
-
 } as const;
 
 type UserSocketCloseReasonKey = typeof UserSocketCloseReason[keyof typeof UserSocketCloseReason];

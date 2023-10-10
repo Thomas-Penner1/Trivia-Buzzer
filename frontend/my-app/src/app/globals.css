@@ -1,5 +1,9 @@
 /* Color variables for use accross the app */
 :root {
+    --default-notification-impact-color: #a00000;
+    --default-notification-hover-color: #d17171;
+    --default-notification-background-color: #FAA0A0;
+
     --error-impact-color: #a00000;
     --error-hover-color: #d17171;
     --error-background-color: #FAA0A0;

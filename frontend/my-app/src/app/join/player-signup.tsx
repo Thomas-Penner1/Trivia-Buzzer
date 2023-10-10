@@ -11,8 +11,10 @@ import CenterForm from '@/components/center-form';
 import BackButton from '@/components/back-button';
 import { StateManager } from '@/util/stateManager';
 import Loader from '@/components/loader';
-import AppNotification from '@/components/notification';
+// import AppNotification from '@/components/notification';
 import PlayerManager, { PlayerEvent, PlayerJoinStatus } from '@/util/playerManager';
+import { AppError, AppNotification } from '@/components/Notification';
+// import AppNotification from '@/components/notification_';
 
 // A component allow a user to join a game, or return to the
 // selection screen
@@ -110,11 +112,11 @@ export default function PlayerSignup() {
             }
 
             {
-                showError ? <AppNotification 
+                showError ? <AppError
                                 message={errorMessage} 
-                                removeFunction={() => {setShowError(false)}} 
-                                inProp={showError} 
-                                activeTime={2000}
+                                callback={() => {setShowError(false)}} 
+                                notificationDuration={2000}
+                                transitionDuration={500}
                             /> 
                             : null
             }

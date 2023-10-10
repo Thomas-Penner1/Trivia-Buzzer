@@ -9,8 +9,9 @@ import BackButton from '@/components/back-button';
 import CenterForm from '@/components/center-form';
 import { StateManager } from '@/util/stateManager';
 import Loader from '@/components/loader';
-import AppNotification from '@/components/notification';
+// import AppNotification from '@/components/notification';
 import PlayerManager, { PlayerEvent } from '@/util/playerManager';
+import { AppError, AppNotification } from '@/components/Notification';
 
 // A component allow a user to join a game, or return to the
 // selection screen
@@ -88,11 +89,11 @@ export default function UsernameSelection() {
             {isLoading ? <Loader /> : null}
 
             {
-                showError ? <AppNotification 
+                showError ? <AppError
                         message={errorMessage} 
-                        removeFunction={() => {setShowError(false)}} 
-                        inProp={showError} 
-                        activeTime={2000}
+                        callback={() => {setShowError(false)}} 
+                        notificationDuration={2000}
+                        transitionDuration={500}
                     /> 
                     : null
             }
