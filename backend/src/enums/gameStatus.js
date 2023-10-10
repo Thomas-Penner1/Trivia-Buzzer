@@ -8,6 +8,7 @@ class GameStatus {
     static ActiveBuzz      = new GameStatus("ActiveBuzz");
     static ActiveCorrect   = new GameStatus("ActiveCorrect");
     static ActiveIncorrect = new GameStatus("ActiveIncorrect");
+    static Stopped          = new GameStatus("Stopped");
 
     constructor(name) {
         this.name = name;

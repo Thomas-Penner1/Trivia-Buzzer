@@ -6,6 +6,7 @@ class MessageMethod {
     static SetUsername     = new MessageMethod("set-username");
     static Buzz            = new MessageMethod("buzz");
     static JoinGame        = new MessageMethod("join-game");
+    static PlayerClose     = new MessageMethod("player-close");
     static PlayerLeave     = new MessageMethod("player-leave");
 
     // Methods for hosts =====================================================

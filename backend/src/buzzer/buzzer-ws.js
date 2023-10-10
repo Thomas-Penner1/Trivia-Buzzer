@@ -72,6 +72,8 @@ function handleConnection(ws, request) {
 
     let user_id = url.searchParams.get('user_id');
     let game_id = url.searchParams.get('game_id');
+
+    // console.log("ids:", user_id, game_id);
     
     let Game = GameManager.getRoom(game_id);
 
@@ -141,12 +143,17 @@ function handleConnection(ws, request) {
     }
 
     function HandleCloseHost() {
+        Game.endGame();
+
+        for (const player of Game.players) {
+            ConnectionManager.RemoveSocket(player.id, CloseMethod.HostClosed);
+        }
     }
 
     function HandleCloseClient() {
         Game.removePlayer(user_id);
         ConnectionManager.RemoveSocket(user_id);
-        ConnectionManager.SendHost(user_id, MessageMethod.PlayerLeave, Game);
+        ConnectionManager.SendHost(user_id, MessageMethod.PlayerClose, Game);
     }
 
     let id = uuidv4();

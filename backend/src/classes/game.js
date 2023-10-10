@@ -112,6 +112,10 @@ class Game {
         }
     }
 
+    endGame() {
+        this.status = GameStatus.Stopped;
+    }
+
     /**
      * Registers the buzz as coming from the player with player_id
      * 
