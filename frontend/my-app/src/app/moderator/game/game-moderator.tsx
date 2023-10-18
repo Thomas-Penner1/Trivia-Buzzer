@@ -11,9 +11,10 @@ import Header from '@/components/header';
 import { Player } from '@/data-structures/player';
 
 import hostStyles from '../../../styles/host.module.css';
-import { StateManager } from '@/util/stateManager';
+// import { StateManager } from '@/util/stateManager';
 import GameBoard from '@/components/game-board';
 import { PlayerStatus } from '@/util/enums/PlayerStatus';
+import { useGame, useGameUpdate } from '@/context/GameContext';
 
 interface BuzzDisplayProps {
     player?: Player,
@@ -35,11 +36,11 @@ function BuzzDisplay({player, onCorrect, onIncorrect}: BuzzDisplayProps) {
                 {username} has buzzed in
 
                 <div className={hostStyles.buzzerOptions}>
-                    <button className={hostStyles.correctButton} onClick={() => onCorrect(user_id)}>
+                    <button className={hostStyles.correctButton} onClick={() => onCorrect()}>
                         Correct
                     </button>
 
-                    <button className={hostStyles.incorrectButton} onClick={() => onIncorrect(user_id)}>
+                    <button className={hostStyles.incorrectButton} onClick={() => onIncorrect()}>
                         Incorrect
                     </button>
                 </div>
@@ -53,120 +54,88 @@ function BuzzDisplay({player, onCorrect, onIncorrect}: BuzzDisplayProps) {
 // selection screen
 export default function GameModerator() {
     let router = useRouter();
-
-    let Game = StateManager.getGame();
-
-    // Get variables for this page
-    let _locked = !Game.isOpen;
-    let _participants = [...Game.players];
-    let gameCode = Game.gameCode;
-
-    const [participants, setParticipants] = useState(_participants);
-    const [locked, setLocked] = useState(_locked);
-
-    const [buzz, setBuzz] = useState(false);
-    const [buzzPlayer, setBuzzPlayer] = useState<Player | undefined>(undefined);
-
-    useEffect(() => {
-        Game.addListener(Game.PlayerEvent, () => {
-            setParticipants([...Game.players]);
-        })
-
-        Game.addListener(Game.BuzzEvent, (user_id: string) => {
-            let player = participants.find((player) => player.id == user_id);
-
-            if (player !== undefined) {
-                setBuzz(true);
-                setBuzzPlayer(player);
-            }
-        });
-
-    }, []);
+    
+    const game = useGame();
+    console.log(game);
+    const updateGame = useGameUpdate();
 
     function togglePolling() {
-        Game.togglePolling();
-
-        setLocked( !locked );
-    }
-
-    function nextQuestion() {
-
-    }
-
-    // On a correct answer, we need to:
-    // 1. Increment the player's points by 1
-    function correctAnswer(user_id: string) {
-        let player = participants.find((player) => player.id == user_id);
-
-        if (player === undefined) {
-            setBuzz(false);
-            return;
+        if (game.getIsOpen()) {
+            updateGame.sendCloseRoom();
+        } else {
+            updateGame.sendOpenRoom();
         }
-
-        player.points = player.points + 1;
-
-        setParticipants([...Game.players])
-        setBuzz(false);
     }
 
-    // On an incorrect answer, we need to:
-    // 1. Change the player's status
-    // 2. Notify to the server that we have an incorrect answer
-    function incorrectAnswer(user_id: string) {
-        let player = participants.find((player) => player.id == user_id);
-
-        if (player === undefined) {
-            setBuzz(false);
-            return;
-        }
-
-        player.status = PlayerStatus.Incorrect;
-        
-        setParticipants([...Game.players]);
-        setBuzz(false);
+    function removePlayer(user_id: string) {
+        updateGame.sendRemovePlayer(user_id);
     }
+
+    let active_player = game.getPlayers().find((player) => player.status === PlayerStatus.Buzz);
+    // console.log(active_player);
+
+    let n_pending = game.getPlayers().filter(player => player.status === PlayerStatus.Pending).length;
+    let n_waiting = game.getPlayers().filter(player => player.status === PlayerStatus.Ready).length;
+    let n_total = game.getPlayers().length;
 
     return (
         <main>
             <div className={hostStyles.hostMainWrapper}>
                 <div className={hostStyles.hostMain}>
                     <div className={hostStyles.hostMainInner}>
-                        <div className={hostStyles.headerWraper}>
+                        <div className={hostStyles.headerWrapper}>
                             <Header />
                         </div>
 
                         <div className={hostStyles.gameBoardWrapper}>
-                            <GameBoard
-                                players={participants}
-                                setUp={false}
-                                removePlayer={(id: string | number) => Game.removePlayer(id)}
+                            <GameBoard 
+                                players={game.getPlayers()} 
+                                setUp={false} 
+                                removePlayer={(id: string) => {removePlayer(id)}}
                             />
                         </div>
 
                         <div className={hostStyles.gameFooter}>
                             <div className={hostStyles.gameCodeWrapper}>
                                 <div className={hostStyles.gameCode}>
-                                    Room Code: {gameCode}
+                                    Room Code: { game.getGameCode() }
                                 </div>
 
                                 <button className={hostStyles.actionButton} onClick={togglePolling}>
-                                    {locked ? "Unlock" : "Lock"}
+                                    {game.getIsOpen() ? "Lock" : "Unlock"}
                                 </button>
                             </div>
 
-                            <button className={hostStyles.actionButton} onClick={nextQuestion}>
-                                Next Question
-                            </button>
+                            <div className={hostStyles.playerInfo}>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Pending: {n_pending}
+                                </div>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Waiting: {n_waiting}
+                                </div>
+                                <div className={hostStyles.playerInfoBlock}>
+                                    Total: {n_total}
+                                </div>
+                            </div>
+
+                            <div className={hostStyles.continueButtonWrapper}>
+                                <button className={hostStyles.continueButton} onClick={() => {updateGame.sendNextQuestion()}}>
+                                    Next Question
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            { buzz ? <BuzzDisplay 
-                player={buzzPlayer}
-                onCorrect={correctAnswer}
-                onIncorrect={incorrectAnswer}
-            /> : null }
+            {
+                active_player !== undefined ? <BuzzDisplay
+                    player={active_player}
+                    onCorrect={() => {updateGame.sendCorrectAnswer()}}
+                    onIncorrect={() => {updateGame.sendIncorrectAnswer()}}
+                /> 
+                : null
+            }
         </main>
     );
 }

@@ -1,23 +1,21 @@
 'use client'
 
-import Link from 'next/link';
-
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from 'react';
 
 import { appConfig } from './../config'
 
+import { UserSocketState } from '@/util/userSocket';
+
+import { useConnection, useConnectionUpdate } from '@/context/GameContext';
+
 import CenterForm from '@/components/center-form';
 import BackButton from '@/components/back-button';
-import { StateManager } from '@/util/stateManager';
 import Loader from '@/components/loader';
-// import AppNotification from '@/components/notification';
-import PlayerManager, { PlayerEvent, PlayerJoinStatus } from '@/util/playerManager';
-import { AppError, AppNotification } from '@/components/Notification';
-// import AppNotification from '@/components/notification_';
+import { PlayerJoinStatus } from '@/util/playerManager';
+import { AppError } from '@/components/Notification';
 
-// A component allow a user to join a game, or return to the
-// selection screen
+
 export default function PlayerSignup() {
     const [isLoading, setIsLoading] = useState(false);
     const [showError, setShowError] = useState(false);
@@ -26,57 +24,33 @@ export default function PlayerSignup() {
 
     const router = useRouter();
 
-    // NOTE: Using useEffect to guarantee that this code is only run the first
-    // time that the component runs
+    const userConnection = useConnection();
+    const updateConnection = useConnectionUpdate();
+
+    // Clear any existing connection (if applicable)
     useEffect(() => {
-        PlayerManager.reset();
+        updateConnection.clearConnection();
     }, []);
 
-    // NOTE: Wrapping the use of the router in use effect, so that we are guaranteed
-    // to only have one method, we can clean it up, and it will run after the
-    // component has been rendered
-    useEffect(() => {
-        PlayerManager.addListener(PlayerEvent.update, () => {
-            router.push('/join/select-username');
-        });
 
-        return () => {
-            console.log("unloading");
-            PlayerManager.removeAllListeners(PlayerEvent.update);
+    useEffect(() => {
+        if (userConnection.socketState === UserSocketState.OPEN) {
+            router.push("/join/select-username");
+        }
+
+        if (userConnection.socketState === UserSocketState.ERROR) {
+            displayError(PlayerJoinStatus.unknown);
         }
     })
 
-    // input we can set isError back to false
-    function handleInput (event: FormEvent) {
-        if (inputError) {
-            setInputError(false);
-        }
-    }
 
-    async function connect(room_code: string) {
-        let result = await PlayerManager.initialize(room_code);
-
-        console.log(result);
-        
-        if (result === PlayerJoinStatus.success) {
-            return;
-        }
-
-        setErrorMessage(getErrorMessage(result));
+    function displayError(code: PlayerJoinStatus) {
+        setErrorMessage(getErrorMessage(code));
         setShowError(true);
         setInputError(true);
         setIsLoading(false);
     }
 
-    const handleSubmit = async (event: FormEvent) => {
-        event.preventDefault();
-        const form = event.target as HTMLFormElement;
-        const roomCode = form.room_code.value as string;
-
-        connect(roomCode);
-        setShowError(false);
-        setIsLoading(true);
-    }
 
     function getErrorMessage(code: PlayerJoinStatus): string {
         if (code === PlayerJoinStatus.room_does_not_exist) {
@@ -87,6 +61,74 @@ export default function PlayerSignup() {
             return "Unable to join at this time. Please try again later."
         }
     }
+
+
+    // Update the input box as soon as the user makes a change
+    function handleInput (event: FormEvent) {
+        if (inputError) {
+            setInputError(false);
+        }
+    }
+
+
+    const handleSubmit = async (event: FormEvent) => {
+        event.preventDefault();
+        
+        const form = event.target as HTMLFormElement;
+        const roomCode = form.room_code.value as string;
+
+        connect(roomCode);
+        
+        setShowError(false);
+        setIsLoading(true);
+    }
+
+
+    async function connect(room_code: string) {
+        let url = appConfig.serverBaseUrl + "/buzzer/join-room";
+
+        const data = {
+            roomCode: room_code,
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.status !== 200) {
+                displayError(PlayerJoinStatus.unknown);
+                return;
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                let game_id = result.room_code;
+                let user_id = result.player.id;
+
+                updateConnection.connectPlayer(game_id, user_id);
+
+            } else {
+                if (result.reason === 0) {
+                    displayError(PlayerJoinStatus.room_does_not_exist)
+                } else if (result.reason === 1) {
+                    displayError(PlayerJoinStatus.room_closed)
+                } else {
+                    displayError(PlayerJoinStatus.unknown);
+                }
+            }
+
+
+        } catch (error) {
+            displayError(PlayerJoinStatus.unknown);
+        }
+    }
+
 
     return (
         <>

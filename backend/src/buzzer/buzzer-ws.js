@@ -79,66 +79,97 @@ function handleConnection(ws, request) {
 
     const isHost = (user_id === Game.host_id);
 
-    ConnectionManager.AddSocket(user_id, ws);
+    ConnectionManager.AddSocket(user_id, ws, isHost);
 
-    function GetState() {
-        sendMessage(ws, MessageMethod.GetState, Game);
+    function GetState(id) {
+        console.log(id);
+        ConnectionManager.SendSender(user_id, MessageMethod.GetState, Game, id);
     }
 
-    function SetUsername(data) {
+    function SetUsername(id, data) {
+        let out_data = {
+            result: false,
+        };
+
+        // Ensure that we have the username
+        if (!data.username) {
+            ConnectionManager.SendHost(user_id, MessageMethod.SetUsername, Game, id, out_data);
+            return;
+        }
+
+        let username = data.username;
+        username = username.trim();
+
+        // Ensure that the username has a length after the trim
+        if (data.username === "") {
+            ConnectionManager.SendHost(user_id, MessageMethod.SetUsername, Game, id, out_data);
+            return;
+        }
+
         Game.setUsername(user_id, data.username);
 
-        ConnectionManager.SendHost(user_id, MessageMethod.SetUsername, Game, data);
+        let result = Game.players.some((player) => player.id === user_id && player.username === data.username);
+        out_data.result = result;
+
+        ConnectionManager.SendHost(user_id, MessageMethod.SetUsername, Game, id, out_data);
     }
 
-    function Buzz() {
+    function Buzz(id) {
+        Game.buzz(user_id);
 
+        ConnectionManager.SendBroadcast(user_id, MessageMethod.Buzz, Game, id);
     }
 
-    function OpenRoom() {
+    function OpenRoom(id) {
         if (user_id !== Game.host_id) {
             return;
         }
 
         Game.openRoom();
-        sendMessage(ws, MessageMethod.OpenRoom, Game);
+        ConnectionManager.SendHost(user_id, MessageMethod.OpenRoom, Game, id);
     }
 
-    function CloseRoom() {
+    function CloseRoom(id) {
         if (user_id !== Game.host_id) {
             return;
         }
 
         Game.closeRoom();
-        sendMessage(ws, MessageMethod.CloseRoom, Game);
+        ConnectionManager.SendHost(user_id, MessageMethod.CloseRoom, Game, id);
     }
 
-    function RemovePlayer(data) {
+    function RemovePlayer(id, data) {
         Game.removePlayer(data.user_id);
 
         ConnectionManager.RemoveSocket(data.user_id, CloseMethod.RemovePlayer);
-        ConnectionManager.SendHost(user_id, MessageMethod.RemovePlayer, Game, data);
+        ConnectionManager.SendHost(user_id, MessageMethod.RemovePlayer, Game, id, data);
     }
 
-    function StartGame() {
+    function StartGame(id) {
         Game.startGame();
 
-        ConnectionManager.SendBroadcast(user_id, MessageMethod.StartGame, Game);
+        ConnectionManager.SendBroadcast(user_id, MessageMethod.StartGame, Game, id);
     }
 
-    function NextQuestion() {
+    function NextQuestion(id) {
+        Game.nextQuestion();
 
+        ConnectionManager.SendBroadcast(user_id, MessageMethod.NextQuestion, Game, id);
     }
 
-    function CorrectAnswer() {
+    function CorrectAnswer(id) {
+        Game.correctAnswer();
 
+        ConnectionManager.SendBroadcast(user_id, MessageMethod.CorrectAnswer, Game, id);
     }
 
-    function IncorrectAnswer() {
+    function IncorrectAnswer(id) {
+        Game.incorrectAnswer();
 
+        ConnectionManager.SendBroadcast(user_id, MessageMethod.IncorrectAnswer, Game, id);
     }
 
-    function Invalid() {
+    function Invalid(id) {
 
     }
 
@@ -169,48 +200,54 @@ function handleConnection(ws, request) {
         
         // let user_id = obj.user_id;
         // let game_id = obj.game_id;
+        let message_id = obj.id;
+        // console.log(message_id);
         let method = MessageMethod.convertString(obj.method);
         let data = obj.data;
 
         switch (method) {
             case MessageMethod.GetState:
-                GetState();
+                GetState(message_id);
                 break;
 
             case MessageMethod.SetUsername:
-                SetUsername(data);
+                SetUsername(message_id, data);
                 break;
 
             case MessageMethod.Buzz:
+                Buzz(message_id);
                 break;
 
             case MessageMethod.OpenRoom:
-                OpenRoom();
+                OpenRoom(message_id);
                 break;
 
             case MessageMethod.CloseRoom:
-                CloseRoom();
+                CloseRoom(message_id);
                 break;
 
             case MessageMethod.RemovePlayer:
-                RemovePlayer(data);
+                RemovePlayer(message_id, data);
                 break;
             
             case MessageMethod.StartGame:
-                StartGame();
+                StartGame(message_id);
                 break;
 
             case MessageMethod.NextQuestion:
+                NextQuestion(message_id);
                 break;
 
             case MessageMethod.CorrectAnswer:
+                CorrectAnswer(message_id);
                 break;
 
             case MessageMethod.IncorrectAnswer:
+                IncorrectAnswer(message_id);
                 break;
 
             default:
-                return MessageMethod.INVALID;
+                Invalid(message_id);
         }
     });
 

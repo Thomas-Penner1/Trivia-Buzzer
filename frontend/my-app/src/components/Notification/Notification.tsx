@@ -99,13 +99,7 @@ export function AppNotification({
         initialState = FaderStates.Entering;
     }
 
-    console.log(initialState);
-
     const [state, setState] = useState(initialState);
-
-    console.log(state);
-
-
 
     // Get theme dependent styles =============================================
     let notificationStyle: string = styles['default-notification'];
@@ -175,13 +169,11 @@ export function AppNotification({
             }, delay)
 
         } else if (state === FaderStates.EnteringActive) {
-            // console.log("here", transitionLength);
             timeoutId = setTimeout(() => {
                 setState(FaderStates.Active)
             }, transitionLength)
 
         } else if (state === FaderStates.Active) {
-            console.log("here", transitionLength);
             if (notificationLength > 0) {
                 timeoutId = setTimeout(() => {
                     setState(FaderStates.ExitActive);
@@ -241,11 +233,17 @@ export function AppNotification({
  */
 export function AppError({
     message, 
-    style="default", 
     notificationDelay, 
     transitionDuration, 
     notificationDuration,
     callback,
 }: AppNotificationProps) {
-    return <AppNotification message={message} style="error" />
+    return <AppNotification 
+        message={message} 
+        style="error" 
+        transitionDuration={transitionDuration}
+        notificationDelay={notificationDelay}
+        notificationDuration={notificationDuration}
+        callback={callback}
+    />
 }

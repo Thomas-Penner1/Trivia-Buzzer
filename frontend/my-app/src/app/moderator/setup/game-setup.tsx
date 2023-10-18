@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from 'react';
 
-import { StateManager } from '@/util/stateManager';
+// import { StateManager } from '@/util/stateManager';
 import { appConfig } from '@/app/config';
 
 import BackButton from '@/components/back-button';
@@ -22,27 +22,17 @@ import Loader from '@/components/loader';
 import GameManager, { GameManagerEvents } from '@/util/gameManager';
 import gameManager from '@/util/gameManager';
 import { GameState } from '@/util/enums/GameState';
+import { useConnection, useGame, useGameUpdate } from '@/context/GameContext';
 
 const MIN_WAIT = 333;
 
 export default function GameSetup() {
     let router = useRouter();
 
-    const [game, setGame] = useState(GameManager.getGame());
-    const [isLoading, setIsLoading] = useState(true);
+    const game = useGame();
+    const updateGame = useGameUpdate();
 
-    // A simple function for when we add
-    function updateGame() {
-        setGame(GameManager.getGame());
-    }
-
-    useEffect(() => {
-        GameManager.addListener(GameManagerEvents.update, updateGame);
-    }, []);
-
-    useEffect(() => {
-        setTimeout(() => {setIsLoading(false)}, MIN_WAIT)
-    }, []);
+    console.log(game);
 
     useEffect(() => {
         if (game.getStatus() === GameState.Active) {
@@ -50,71 +40,20 @@ export default function GameSetup() {
         }
     });
 
-    GameManager.initialize();
-    // console.log(GameManager);
-
-    // Get the game from the state manager
-    // let Game = StateManager.getGame();
-
-    // const [gameCode, setGameCode] = useState("");
-    // const [participants, setParticipants] = useState([] as Player[]);
-
-    console.log(game);
-
-
-
-    // Only run after the FIRST time this object has been loaded
-    // useEffect(() => {
-    //     Game.addListener(Game.GameCodeEvent, () => {
-    //         if (Game.gameCode !== undefined) {
-    //             setGameCode(Game.gameCode);
-    //             setIsLoading(false);
-    //         }
-    //     })
-    
-    //     Game.addListener(Game.PlayerEvent, () => {
-    //         setParticipants([...Game.players]);
-    //     })
-
-    //     initialize();
-    // }, []);
-
-    // async function initialize() {
-    //     let url = appConfig.serverBaseUrl + "/buzzer/create-game";
-    //     const response = await fetch(url, {
-    //         method: "POST",
-    //     });
-
-    //     // When we are unable to initialize this component, we return to
-    //     // homepage
-    //     if (response.status != 200) {
-    //         router.push('.');
-    //     }
-        
-    //     const result = await response.json();
-
-    //     StateManager.initialize(result.room_id, result.user_id, true);
-    //     StateManager.connect();
-    // }
-
     function togglePolling() {
         if (game.getIsOpen()) {
-            gameManager.sendCloseRoom();
+            updateGame.sendCloseRoom();
         } else {
-            gameManager.sendOpenRoom();
+            updateGame.sendOpenRoom();
         }
     }
 
     function removePlayer(user_id: string) {
-        GameManager.sendRemovePlayer(user_id);
+        updateGame.sendRemovePlayer(user_id);
     }
 
     function startGame() {
-        GameManager.sendStartGame();
-    }
-
-    if (isLoading || !game.getGameCode()) {
-        return <Loader />
+        updateGame.sendStartGame();
     }
 
     let n_pending = game.getPlayers().filter(player => player.status === PlayerStatus.Pending).length;

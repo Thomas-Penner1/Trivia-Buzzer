@@ -19,4 +19,5 @@ export enum PlayerStatus {
     Active = "Active",
     Buzz = "Buzz",
     Incorrect = "Incorrect",
+    Correct = "Correct",
 }

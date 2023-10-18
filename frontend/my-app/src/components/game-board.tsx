@@ -19,6 +19,7 @@ function isActive(player: Player, setUp: boolean) {
         return (
             player.status === PlayerStatus.Active || 
             player.status === PlayerStatus.Buzz ||
+            player.status === PlayerStatus.Correct ||
             player.status === PlayerStatus.Incorrect
         );
     }
@@ -106,31 +107,6 @@ export default function GameBoard({players, setUp, removePlayer, buzz_id}: GameB
                             </tbody>
                         </table>
                     </div>
-{/* 
-                    <div>
-                        PENDING PLAYERS
-                    </div>
-
-                    <div>
-                        WAITING PLAYERS
-                    </div> */}
-                    {/* <div  className={styles.bottomSection}>
-                        <div className={styles.bottomSectionText}>
-                            Pending: {pendingPlayers.length}
-                        </div>
-                        <button>
-                            Remove Pending
-                        </button>
-                    </div>
-
-                    <div  className={styles.bottomSection}>
-                        <div className={styles.bottomSectionText}>
-                            Waiting: {waitingPlayers.length}
-                        </div>
-                        <button>
-                            Remove Waiting
-                        </button>
-                    </div> */}
                 </div>
             </div>
         </div>
