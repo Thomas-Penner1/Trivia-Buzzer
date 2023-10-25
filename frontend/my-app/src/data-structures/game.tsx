@@ -1,9 +1,5 @@
 import { GameState } from "@/util/enums/GameState";
 import { Player } from "./player";
-// import { StateManager } from "@/util/stateManager";
-import EventEmitter from "events";
-import { PlayerStatus } from "@/util/enums/PlayerStatus";
-
 
 export interface GamePrototype {
     players: Player[];

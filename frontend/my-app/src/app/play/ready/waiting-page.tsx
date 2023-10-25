@@ -7,7 +7,6 @@ import { usePlayer } from "@/context/GameContext";
 import { useEffect, useState } from "react";
 import { PlayerStatus } from "@/util/enums/PlayerStatus";
 import { AppNotification } from "@/components/Notification";
-// import { StateManager } from "@/util/stateManager";
 
 // This is a waiting room for the players who are participating in the room
 export default function WaitingPage() {

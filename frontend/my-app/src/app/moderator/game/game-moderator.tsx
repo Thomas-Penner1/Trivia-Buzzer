@@ -1,11 +1,6 @@
 'use client'
 
-import Link from 'next/link';
-
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from 'react';
-
-import BackButton from '@/components/back-button';
 import Header from '@/components/header';
 
 import { Player } from '@/data-structures/player';

@@ -1,12 +1,11 @@
 'use client'
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import ScoreCard from "@/components/score-card";
 
 import buzzerStyles from "../../styles/buzzer.module.css"
-// import { StateManager } from "@/util/stateManager";
 import { PlayerStatus } from "@/util/enums/PlayerStatus";
 import { usePlayer, usePlayerUpdate } from "@/context/GameContext";
 

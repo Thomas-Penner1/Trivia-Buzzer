@@ -1,28 +1,16 @@
 'use client'
 
-import Link from 'next/link';
-
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
-// import { StateManager } from '@/util/stateManager';
-import { appConfig } from '@/app/config';
-
-import BackButton from '@/components/back-button';
 import Header from '@/components/header';
 
-import { Player } from '@/data-structures/player';
-
 import hostStyles from '../../../styles/host.module.css';
-import PlayerDisplay from '@/components/player';
 import { PlayerStatus } from '@/util/enums/PlayerStatus';
 import GameBoard from '@/components/game-board';
-import Loader from '@/components/loader';
 
-import GameManager, { GameManagerEvents } from '@/util/gameManager';
-import gameManager from '@/util/gameManager';
 import { GameState } from '@/util/enums/GameState';
-import { useConnection, useGame, useGameUpdate } from '@/context/GameContext';
+import { useGame, useGameUpdate } from '@/context/GameContext';
 
 const MIN_WAIT = 333;
 
