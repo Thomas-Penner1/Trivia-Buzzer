@@ -4,12 +4,13 @@
 
 This is a trivia buzzer designed to facilitate live trivia, without the need for physical buzzers, or requiring everyone to be in the same location. A link to the webpage will be provided once the website is hosted.
 
-The application uses Next.js for the front end, and Node.JS for the back end, allowing for a simple development process.
+The application uses Next.js for the front end, and Node.JS for the back end, allowing for a simple development process. As well, I built a communication protocol on top of the Websocket protocol. More documentation of that protocol is to come.
 
 This project is still in progress, and some of the things that still need to be done are:
  - Website hosting
  - Unit tests
  - Integration tests
+ - Documentation
 
 ### Future
 
