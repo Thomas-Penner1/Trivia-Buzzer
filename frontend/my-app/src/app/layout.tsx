@@ -2,6 +2,8 @@ import { Inter } from 'next/font/google'
 
 import "./globals.css"
 import { GameProvider } from '@/context/GameContext'
+import { AppNotificationProvider } from '@/context/AppNotificationContext'
+import DisplayAppNotification from '@/components/AppNotification/DisplayAppNotification'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -10,6 +12,7 @@ export const metadata = {
   description: 'A trivia buzzer for in person trivia',
 }
 
+
 export default function RootLayout({
   children,
 }: {
@@ -17,11 +20,17 @@ export default function RootLayout({
 }) {
   return (
     <GameProvider>
-        <html lang="en">
-            <body className={inter.className}>
-                {children}
-            </body>
-        </html>
+        <AppNotificationProvider>
+            <html lang="en">
+                <body className={inter.className}>
+                    <main>
+                        {children}
+                    </main>
+
+                    <DisplayAppNotification/>
+                </body>
+            </html>
+        </AppNotificationProvider>
     </GameProvider>
   )
 }

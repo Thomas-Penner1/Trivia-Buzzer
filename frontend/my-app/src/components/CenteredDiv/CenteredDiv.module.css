@@ -1,0 +1,24 @@
+.centeredVerticalOuter {
+    display: table;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.centeredVerticalMiddle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.centeredVerticalInner {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.centeredHorizontalOuter {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}

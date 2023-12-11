@@ -8,13 +8,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { ProcessServerMessage } from "./serverMessage";
 
 
-interface SocketMessage {
-    method: string;
-    timestamp: number;
-    sender: string;
-}
-
-
 export enum UserSocketEvent {
     CONNECT    = "CONNECT",
     GAME       = "GAME",
@@ -23,6 +16,7 @@ export enum UserSocketEvent {
     CLOSE      = "CLOSE",
 }
 
+
 export enum UserSocketState {
     CONNECTING,
     OPEN,
@@ -30,6 +24,7 @@ export enum UserSocketState {
     CLOSED,
     ERROR,
 }
+
 
 export const UserSocketCloseReason = {
     UNKOWN_REASON:         1006,
@@ -43,7 +38,9 @@ export const UserSocketCloseReason = {
     USER_ENDED_CONNECTION: 4200,
 } as const;
 
+
 type UserSocketCloseReasonKey = typeof UserSocketCloseReason[keyof typeof UserSocketCloseReason];
+
 
 export class UserSocket extends EventEmitter {
     private socket: WebSocket;

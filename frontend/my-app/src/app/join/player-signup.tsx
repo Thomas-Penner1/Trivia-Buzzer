@@ -13,7 +13,7 @@ import CenterForm from '@/components/center-form';
 import BackButton from '@/components/back-button';
 import Loader from '@/components/loader';
 import { PlayerJoinStatus } from '@/util/playerManager';
-import { AppError } from '@/components/Notification';
+import { AppError } from '@/components/AppNotification/AppNotification';
 
 
 export default function PlayerSignup() {

@@ -4,7 +4,7 @@ import CenterForm from "@/components/center-form";
 import { useConnection, useConnectionUpdate } from "@/context/GameContext";
 import { FormEvent, useEffect, useState } from "react";
 import { appConfig } from "../config";
-import { AppError } from "@/components/Notification";
+import { AppError } from "@/components/AppNotification/AppNotification";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
 import { UserSocketState } from "@/util/userSocket";

@@ -6,7 +6,7 @@ import { FormEvent, useState } from 'react';
 import BackButton from '@/components/back-button';
 import CenterForm from '@/components/center-form';
 import Loader from '@/components/loader';
-import { AppError } from '@/components/Notification';
+import { AppError } from '@/components/AppNotification/AppNotification';
 import { usePlayer, usePlayerUpdate } from "@/context/GameContext";
 
 

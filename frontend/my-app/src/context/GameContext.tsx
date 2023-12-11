@@ -121,6 +121,15 @@ export function GameProvider({ children }: GameProviderProps) {
         }
 
         router.push(appConfig.clientBaseUrl);
+    }, [pathname]);
+
+
+    // Ensure that certain pages don't have any active websockets
+    useEffect(() => {
+        if (pathname === "/" || pathname === "/create-game" || pathname === "/join") {
+            clearConnection();
+        }
+
     }, [pathname])
 
 
@@ -230,33 +239,12 @@ export function GameProvider({ children }: GameProviderProps) {
 
     // HOST CONNECTION ========================================================
     function connectHost(game_id: string, user_id: string) {
-        // userSocket.current = new UserSocket(game_id, user_id);
-
-        // console.log(userState);
-
         userState.is_host = true;
         userState.game_id = game_id;
         userState.user_id = user_id;
         userState.should_have_socket = true;
 
-        // console.log(userState);
-
         updateState(userState);
-
-        // let newUserState = {
-        //     is_host: true,
-        //     user_id: game_id,
-        //     game_id: user_id,
-        //     game: new Game_(),
-            
-        //     has_socket: true,
-        //     socketState: userSocket.current.socketState,
-        //     socketCloseReason: userSocket.current.socketCloseReason,
-        // } as UserState;
-
-        // addListeners();
-
-        // updateState(newUserState);
     }
 
     function sendRemovePlayer(user_id: string) {
@@ -337,10 +325,6 @@ export function GameProvider({ children }: GameProviderProps) {
         if (userSocket.current === undefined) {
             return;
         }
-
-        // let x = function(abc: any) {
-        //     console.log(abc)
-        // }
 
         userSocket.current.requestSetUsername(username, callback);
     }
