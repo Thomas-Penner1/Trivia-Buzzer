@@ -27,7 +27,7 @@ export function AppNotification({ notification, removeNotification }: AppNotific
 
                     <div className={styles.notificationBox}>
                         <div className={styles.notificationImageWrapper}>
-                            <img className={`${styles.notificationImage} ${styles.filterGreen}`} src={img_path} alt="" />
+                            <img className={`${styles.notificationImage}`} src={img_path} alt="" />
                         </div>
 
                         <div className={styles.notificationContentWrapper}>

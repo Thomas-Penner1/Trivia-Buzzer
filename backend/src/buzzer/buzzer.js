@@ -33,6 +33,7 @@ function joinRoom(req, res) {
     let room_code = req.body.roomCode;
     let game = GameManager.getRoomByPassword(room_code);
 
+    // The game does not exist
     if (game === undefined) {
         let data = {
             'success': false,
@@ -53,7 +54,6 @@ function joinRoom(req, res) {
     let data = {};
 
     if (success) {
-        // TODO: notify the front-end (moderator) that a new player has joined
         data = {
             'success': true,
             'player': newPlayer,

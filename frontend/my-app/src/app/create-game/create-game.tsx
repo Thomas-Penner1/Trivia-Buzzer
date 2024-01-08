@@ -1,13 +1,13 @@
 'use client'
 
-import CenterForm from "@/components/center-form";
 import { useConnection, useConnectionUpdate } from "@/context/GameContext";
 import { FormEvent, useEffect, useState } from "react";
 import { appConfig } from "../config";
-import { AppError } from "@/components/AppNotification/AppNotification";
 import Loader from "@/components/loader";
 import { useRouter } from "next/navigation";
 import { UserSocketState } from "@/util/userSocket";
+import { HorizontalCenteredDiv, VerticalCenteredDiv } from "@/components/CenteredDiv";
+import { useUpdateAppNotificationContext } from "@/context/AppNotificationContext";
 
 function getErrorMessage() {
     return "Unable to create a game right now. Try again later.";
@@ -16,12 +16,13 @@ function getErrorMessage() {
 export default function CreateGame() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
-    const [showError, setShowError] = useState(false);
 
     const errorMessage = getErrorMessage();
 
     const updateConnection = useConnectionUpdate();
     const userConnection = useConnection();
+
+    const addAppNotification = useUpdateAppNotificationContext();
 
     useEffect(() => {
         if (userConnection.socketState === UserSocketState.OPEN) {
@@ -29,7 +30,6 @@ export default function CreateGame() {
         }
 
         if (userConnection.socketState === UserSocketState.ERROR) {
-            setShowError(true);
             setIsLoading(false);
         }
     })
@@ -46,76 +46,87 @@ export default function CreateGame() {
         const form = event.target as HTMLFormElement;
         const roomName = form.room_name.value as string;
 
-        createGame();
+        createGame(roomName);
 
         setIsLoading(true);
     }
 
 
-    async function createGame() {
+    async function createGame(roomName: string) {
         let url = appConfig.serverBaseUrl + "/buzzer/create-game";
 
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-            });
+        let response;
 
-            if (response.status !== 200) {
-                setShowError(true);
-                setIsLoading(false);
-                return;
+        try {
+            if (roomName) {
+                const data = {
+                    roomName: roomName,
+                }
+
+                console.log(roomName);
+
+                response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data)
+                });
+
+            } else {
+                response = await fetch(url, {
+                    method: "POST",
+                });
             }
 
-            const result = await response.json();
-
-            let game_id = result.room_id;
-            let user_id = result.user_id;
-
-            console.log(game_id);
-            console.log(user_id);
-
-            updateConnection.connectHost(game_id, user_id);
-
-            // updateGame.connectHost(game_id, user_id);
-
-            // console.log(userState);
-
         } catch (error) {
-            setShowError(true);
             setIsLoading(false);
+            addAppNotification.displayError(errorMessage);
+            return;
         }
+
+        if (response.status !== 200) {
+            setIsLoading(false);
+            addAppNotification.displayError(errorMessage);
+        }
+
+        const result = await response.json();
+
+        let game_id = result.room_id;
+        let user_id = result.user_id;
+
+        updateConnection.connectHost(game_id, user_id);
     }
 
     return (
-        <main>
-            <CenterForm>
-                <form onSubmit={handleSubmit}>
-                    <input
-                        className={"submit-text-box"}
-                        type="text"
-                        id="room_name" 
-                        name="room_name"
-                        placeholder='Game Name (optional)'
-                        autoComplete='off'
-                    />
+        <>
+            <VerticalCenteredDiv>
+                <HorizontalCenteredDiv>
+                    <div className="middle-menu-background">
+                        <div>
+                            <h1>
+                                Create Game
+                            </h1>
+                            <form onSubmit={handleSubmit}>
+                                <input
+                                    className={"submit-text-box"}
+                                    type="text"
+                                    id="room_name"
+                                    name="room_name"
+                                    placeholder="Game Name (optional)"
+                                    autoComplete="off"
+                                />
 
-                    <button type="submit" className="submit-button">Create Game</button>
-                </form>
-            </CenterForm>
-
-            {
-                showError ? <AppError 
-                    message={errorMessage}  
-                    transitionDuration={500} 
-                    notificationDuration={2000}
-                    callback={() => {setShowError(false)}}
-                    /> 
-                    : null
-            }
+                                <button type="submit">Create</button>
+                            </form>
+                        </div>
+                    </div>
+                </HorizontalCenteredDiv>
+            </VerticalCenteredDiv>
 
             {
                 isLoading ? <Loader /> : null
             }
-        </main>
+        </>
     );
 }

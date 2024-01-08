@@ -27,12 +27,12 @@
     justify-content: center;
 }
 
-.selectionButton {
+/* .selectionButton {
     font-size: 30px;
     cursor: pointer;
     padding: 10px;
     border-radius: 10px;
-}
+} */
 
 .buttonSeparator {
     margin-top: 5px;

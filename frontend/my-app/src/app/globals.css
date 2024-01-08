@@ -29,8 +29,19 @@ body {
 }
 
 
+main {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+
 button {
     background-color: grey;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 10px;
 }
 
 
@@ -48,8 +59,8 @@ button {
 .middle-menu-background {
     border-radius: 10px;
     background-color: #ffffff;
-    padding: 6% 6%;
-    max-width: 450px;
+    padding: 3% 3%;
+    width: 450px;
 }
 
 

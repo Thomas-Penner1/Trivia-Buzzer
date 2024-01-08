@@ -17,9 +17,7 @@ export function HorizontalCenteredDiv({children}: {children: React.ReactNode}) {
     return (
         <div className={styles.centeredHorizontalOuter}>
             { /* Div to ensure only 1  child */}
-            <div>
-                {children}
-            </div>
+            {children}
         </div>
     )
 }

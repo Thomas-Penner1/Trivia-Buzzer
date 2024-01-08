@@ -1,8 +1,9 @@
 'use client'
 
-import React, { ReactNode, useContext, useState } from "react";
+import React, { ReactNode, useContext, useEffect, useState } from "react";
 
 import { AppNotificationStyle, AppNotificationContent } from "@/data-structures/AppNotificationContent";
+import { usePathname } from "next/navigation";
 
 
 interface DisplayNewAppNotification {
@@ -38,14 +39,22 @@ interface NotificationProviderProps {
 
 
 export function AppNotificationProvider({children}: NotificationProviderProps) {
+    const pathname = usePathname();
     const [CurrentNotification, setCurrentNotification] = useState<AppNotificationContent | null>(null);
 
+
+    useEffect(() => {
+        return () => {
+            removeAppNotification();
+        }
+    }, [pathname]);
+
     function displayNotification(message: string) {
-        setCurrentNotification({message: message, style: AppNotificationStyle.Notification});
+        setCurrentNotification(new AppNotificationContent(message, AppNotificationStyle.Notification));
     }
 
     function displayError(message: string) {
-        setCurrentNotification({message: message, style: AppNotificationStyle.Error});
+        setCurrentNotification(new AppNotificationContent(message, AppNotificationStyle.Error));
     }
 
     function removeAppNotification() {

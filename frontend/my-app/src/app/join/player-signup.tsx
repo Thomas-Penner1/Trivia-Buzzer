@@ -5,32 +5,25 @@ import { FormEvent, useEffect, useState } from 'react';
 
 import { appConfig } from './../config'
 
-import { UserSocketState } from '@/util/userSocket';
-
 import { useConnection, useConnectionUpdate } from '@/context/GameContext';
 
-import CenterForm from '@/components/center-form';
-import BackButton from '@/components/back-button';
 import Loader from '@/components/loader';
-import { PlayerJoinStatus } from '@/util/playerManager';
-import { AppError } from '@/components/AppNotification/AppNotification';
+import { HorizontalCenteredDiv, VerticalCenteredDiv } from "@/components/CenteredDiv";
+import { useUpdateAppNotificationContext } from "@/context/AppNotificationContext";
+import Link from "next/link";
+import { UserSocketState } from "@/util/userSocket";
 
 
 export default function PlayerSignup() {
+    const addAppNotification = useUpdateAppNotificationContext();
+
     const [isLoading, setIsLoading] = useState(false);
-    const [showError, setShowError] = useState(false);
     const [inputError, setInputError] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
 
     const router = useRouter();
 
     const userConnection = useConnection();
     const updateConnection = useConnectionUpdate();
-
-    // Clear any existing connection (if applicable)
-    useEffect(() => {
-        updateConnection.clearConnection();
-    }, []);
 
 
     useEffect(() => {
@@ -39,23 +32,24 @@ export default function PlayerSignup() {
         }
 
         if (userConnection.socketState === UserSocketState.ERROR) {
-            displayError(PlayerJoinStatus.unknown);
+            displayError(-1);
         }
     })
 
 
-    function displayError(code: PlayerJoinStatus) {
-        setErrorMessage(getErrorMessage(code));
-        setShowError(true);
+    function displayError(code: number) {
+        addAppNotification.displayError(getErrorMessage(code));
         setInputError(true);
         setIsLoading(false);
+
+        addAppNotification.displayError("An error occured");
     }
 
 
-    function getErrorMessage(code: PlayerJoinStatus): string {
-        if (code === PlayerJoinStatus.room_does_not_exist) {
+    function getErrorMessage(code: number): string {
+        if (code === 0) {
             return "Unable to find a matching room."
-        } else if (code === PlayerJoinStatus.room_closed) {
+        } else if (code === 1) {
             return "Unable to join at the room at this time. Please try another room code."
         } else {
             return "Unable to join at this time. Please try again later."
@@ -63,7 +57,7 @@ export default function PlayerSignup() {
     }
 
 
-    // Update the input box as soon as the user makes a change
+    // // Update the input box as soon as the user makes a change
     function handleInput (event: FormEvent) {
         if (inputError) {
             setInputError(false);
@@ -78,8 +72,8 @@ export default function PlayerSignup() {
         const roomCode = form.room_code.value as string;
 
         connect(roomCode);
-        
-        setShowError(false);
+
+        addAppNotification.removeAppNotification();
         setIsLoading(true);
     }
 
@@ -91,8 +85,10 @@ export default function PlayerSignup() {
             roomCode: room_code,
         }
 
+        let response;
+
         try {
-            const response = await fetch(url, {
+            response = await fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -100,69 +96,58 @@ export default function PlayerSignup() {
                 body: JSON.stringify(data)
             });
 
-            if (response.status !== 200) {
-                displayError(PlayerJoinStatus.unknown);
-                return;
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                let game_id = result.room_code;
-                let user_id = result.player.id;
-
-                updateConnection.connectPlayer(game_id, user_id);
-
-            } else {
-                if (result.reason === 0) {
-                    displayError(PlayerJoinStatus.room_does_not_exist)
-                } else if (result.reason === 1) {
-                    displayError(PlayerJoinStatus.room_closed)
-                } else {
-                    displayError(PlayerJoinStatus.unknown);
-                }
-            }
-
-
         } catch (error) {
-            displayError(PlayerJoinStatus.unknown);
+            displayError(-1);
+            return;
+        }
+
+        if (response.status !== 200) {
+            displayError(-1);
+            return;
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+            let game_id = result.room_code;
+            let user_id = result.player_id;
+
+            updateConnection.connectPlayer(game_id, user_id);
+
+        } else {
+            displayError(result.reason);
         }
     }
 
 
     return (
         <>
-        
-        <main>
-        <BackButton url="."/>
-            <CenterForm>
-                <form onSubmit={handleSubmit} className="">
-                    <input
-                        className={"submit-text-box " + (inputError ? "submit-text-box-error" : "")}
-                        type="text"
-                        id="room_code" 
-                        name="room_code"
-                        placeholder='Room Code'
-                        autoComplete='off'
-                        onInput={handleInput}
-                    />
-                    <button type="submit" className="submit-button">Submit</button>
-                </form>
-            </CenterForm>
+            <VerticalCenteredDiv>
+                <HorizontalCenteredDiv>
+                    <div className="middle-menu-background">
+                        <div>
+                            <h1>Join Game</h1>
+                        </div>
+                        <form onSubmit={handleSubmit} className="">
+                            <input
+                                className={"submit-text-box " + (inputError ? "submit-text-box-error" : "")}
+                                type="text"
+                                id="room_code" 
+                                name="room_code"
+                                placeholder='Room Code'
+                                autoComplete='off'
+                                onInput={handleInput}
+                            />
+                            <button type="submit">Join</button>
+                        </form>
+                        <Link href=".">Home</Link>
+                    </div>
+                </HorizontalCenteredDiv>
+            </VerticalCenteredDiv>
+
             {
                 isLoading ? <Loader /> : null
             }
-
-            {
-                showError ? <AppError
-                                message={errorMessage} 
-                                callback={() => {setShowError(false)}} 
-                                notificationDuration={2000}
-                                transitionDuration={500}
-                            /> 
-                            : null
-            }
-        </main>
         </>
     );
 }

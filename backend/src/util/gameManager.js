@@ -1,5 +1,3 @@
-// const GameWS = require("../classes/game-ws")
-
 const Game = require("../classes/game");
 const { generateRoomPassword } = require("./buzzerUtil");
 

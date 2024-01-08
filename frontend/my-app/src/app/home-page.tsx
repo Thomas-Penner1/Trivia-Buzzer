@@ -50,7 +50,6 @@ export default function HomePage() {
 
     const addAppNotification = useUpdateAppNotificationContext();
 
-
     // Notify user why their game closed
     useEffect(() => {
         if (searchParams.get("close_reason")) {
